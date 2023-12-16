@@ -37,7 +37,7 @@ echo "Done!"
 echo "Install additional software"
 apt-get install -y vim php${PHP_VERSION}-curl php${PHP_VERSION}-cli php${PHP_VERSION}-intl php${PHP_VERSION}-gd \
 php${PHP_VERSION}-fpm php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-zip php${PHP_VERSION}-xdebug \
-php${PHP_VERSION}-apcu php${PHP_VERSION}-pgsql php${PHP_VERSION}-soap unzip nginx git redis nodejs npm default-jre php-pcov php${PHP_VERSION}-tidy
+php${PHP_VERSION}-apcu php${PHP_VERSION}-pgsql php${PHP_VERSION}-soap unzip nginx nodejs npm php-pcov php${PHP_VERSION}-tidy
 echo "Done!"
 
 echo "Configure PHP and PHP-FPM"

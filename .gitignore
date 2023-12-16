@@ -1,0 +1,3 @@
+.vagrant
+config.yml
+src/bin/local-php-security-checker
