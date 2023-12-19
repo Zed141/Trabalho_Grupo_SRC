@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Codeception">
+    <option name="configurations">
+      <list>
+        <Configuration>
+          <option name="path" value="$PROJECT_DIR$/tests" />
+        </Configuration>
+        <Configuration>
+          <option name="namespace" value="common\tests" />
+          <option name="path" value="$PROJECT_DIR$/src/common/tests" />
+        </Configuration>
+        <Configuration>
+          <option name="namespace" value="backend\tests" />
+          <option name="path" value="$PROJECT_DIR$/src/backend/tests" />
+        </Configuration>
+        <Configuration>
+          <option name="namespace" value="common\tests" />
+          <option name="path" value="$PROJECT_DIR$/src/common/tests" />
+        </Configuration>
+        <Configuration>
+          <option name="namespace" value="frontend\tests" />
+          <option name="path" value="$PROJECT_DIR$/src/frontend/tests" />
+          <option name="mySuiteNamespaces">
+            <map>
+              <entry key="functional" value="frontend\tests\functional" />
+              <entry key="unit" value="frontend\tests\unit" />
+            </map>
+          </option>
+        </Configuration>
+        <Configuration>
+          <option name="namespace" value="backend\tests" />
+          <option name="path" value="$PROJECT_DIR$/src/backend/tests" />
+        </Configuration>
+        <Configuration>
+          <option name="path" value="$PROJECT_DIR$/src/tests" />
+        </Configuration>
+      </list>
+    </option>
+  </component>
+</project>
