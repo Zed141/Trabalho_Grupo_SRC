@@ -10,12 +10,11 @@ defined('YII_ENV') or define('YII_ENV', 'test');
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
-require __DIR__ . '/../app/config/bootstrap.php';
-require __DIR__ . '/../app/config/bootstrap.php';
+require __DIR__ . '/../common/config/bootstrap.php';
 
 $config = yii\helpers\ArrayHelper::merge(
     require __DIR__ . '/../app/config/main.php',
-    require __DIR__ . '/../app/config/main-local.php',
+    require __DIR__ . '/../app/config/main.dev.php',
     require __DIR__ . '/../app/config/test.php',
     require __DIR__ . '/../app/config/test-local.php',
 );

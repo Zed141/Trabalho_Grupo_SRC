@@ -2,7 +2,7 @@
 
 source /app/env/vagrant-provision/common.sh
 
-PHP_VERSION=8.2
+PHP_VERSION=8.3
 
 #== Provision script ==
 

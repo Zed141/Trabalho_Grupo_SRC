@@ -10,7 +10,8 @@ end
 options = YAML.load_file 'config.yml'
 
 # check github token
-if options['github_token'].nil? || options['github_token'].to_s.length != 40
+# if options['github_token'].nil? || options['github_token'].to_s.length != 40
+if options['github_token'].nil?
   puts "You must place REAL GitHub token into configuration:\config-local.yml"
   exit
 end
@@ -32,6 +33,7 @@ Vagrant.configure(2) do |config|
 	vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
   end
 
+  # config.ssh.insert_key = false
   # machine name (for vagrant console)
   config.vm.define options['machine_name']
 
@@ -44,7 +46,7 @@ Vagrant.configure(2) do |config|
   # sync: folder './' (host machine) -> folder '/app' (guest machine)
   config.vm.synced_folder './', '/app', owner: 'vagrant', group: 'vagrant'
   config.vm.synced_folder './src', '/src', owner: 'vagrant', group: 'vagrant'
-  config.vm.synced_folder './src/', '/rsrc', type: 'rsync'
+  # config.vm.synced_folder './src/', '/rsrc', type: 'rsync'
 
   config.vm.provider 'virtualbox' do |vb|
     vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate//app", "1"]

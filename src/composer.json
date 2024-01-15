@@ -1,18 +1,16 @@
 {
-    "name": "xxx/xxx",
+    "name": "mcif/src2024",
     "description": "Projeto SRC, MCIF",
     "keywords": ["cibersecurity", "password manager", "multi-user"],
-    "homepage": "https://xxx/",
+    "homepage": "https://github.com/Zed141/Trabalho_Grupo_SRC",
     "type": "project",
-    "license": "xxx",
+    "license": "proprietary",
     "support": {
-        "issues": "xx",
-        "wiki": "xxx",
-        "source": "xxx"
+        "source": "https://github.com/Zed141/Trabalho_Grupo_SRC"
     },
     "minimum-stability": "dev",
     "require": {
-        "php": ">=8.2.0",
+        "php": ">=8.3.0",
         "yiisoft/yii2": "~2.0.45",
         "yiisoft/yii2-bootstrap5": "~2.0.2",
         "yiisoft/yii2-symfonymailer": "~2.0.3"
@@ -32,7 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "tests\\app": ["tests/app"]
+            "tests\\app\\": ["tests/app"]
         }
     },
     "config": {
@@ -42,6 +40,21 @@
         "process-timeout": 1800,
         "fxp-asset": {
             "enabled": false
+        }
+    },
+    "extra": {
+        "yii\\composer\\Installer::postCreateProject": {
+            "setPermission": [
+                {
+                    "app/runtime": "0777",
+                    "console/yii": "0755"
+                }
+            ]
+        },
+        "yii\\composer\\Installer::postInstall": {
+            "generateCookieValidationKey": [
+                "app/config/main.php"
+            ]
         }
     },
     "repositories": [

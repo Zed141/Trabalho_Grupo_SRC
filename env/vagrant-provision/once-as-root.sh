@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source /app/env/vagrant-provision/common.sh
-PHP_VERSION=8.2
+PHP_VERSION=8.3
 
 #== Import script args ==
 
@@ -65,6 +65,8 @@ echo "Enabling site configuration"
 ln -s /app/env/nginx/app.conf /etc/nginx/sites-enabled/app.conf
 rm /etc/nginx/sites-enabled/default
 echo "Done!"
+
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 cd /app/src/bin/
 wget https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.3/local-php-security-checker_2.0.3_linux_amd64
