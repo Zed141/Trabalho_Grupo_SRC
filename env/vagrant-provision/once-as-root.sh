@@ -35,7 +35,7 @@ apt-get update
 echo "Done!"
 
 echo "Install additional software"
-apt-get install -y vim php${PHP_VERSION}-curl php${PHP_VERSION}-cli php${PHP_VERSION}-intl php${PHP_VERSION}-gd \
+apt-get install -y vim php${PHP_VERSION}-curl php${PHP_VERSION}-cli php${PHP_VERSION}-intl php${PHP_VERSION}-gd php${PHP_VERSION}-sqlite3 \
 php${PHP_VERSION}-fpm php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-zip php${PHP_VERSION}-xdebug \
 php${PHP_VERSION}-apcu php${PHP_VERSION}-pgsql php${PHP_VERSION}-soap unzip nginx nodejs npm php-pcov php${PHP_VERSION}-tidy
 echo "Done!"
@@ -67,6 +67,8 @@ rm /etc/nginx/sites-enabled/default
 echo "Done!"
 
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+cd /app/src
+composer install --ignore-platform-reqs
 
 cd /app/src/bin/
 wget https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.3/local-php-security-checker_2.0.3_linux_amd64

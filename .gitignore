@@ -3,3 +3,5 @@
 src/bin/local-php-security-checker
 /src/_ENV
 /src/vendor/
+/src/public/demo
+/src/bin/*.sqlite
