@@ -11,8 +11,8 @@ $config['components']['log']['traceLevel'] = 3;
 $config['components']['cache']['class'] = 'yii\caching\DummyCache';
 unset($config['components']['cache']['useApcu']);
 
-$config['components']['db']['dsn'] = '<dsn>';
-$config['components']['db']['username'] = '';
+$config['components']['db']['dsn'] = 'sqlite:</path/to/db.sqlite>';
+$config['components']['db']['username'] = 'root';
 $config['components']['db']['password'] = '';
 $config['components']['db']['enableSchemaCache'] = false;
 $config['components']['mailer']['useFileTransport'] = true;
