@@ -1,6 +1,14 @@
 Funcionalidades:
 * Register - Chaves Pub/priv
-* Login - Chaves Pub/priv
+    Criado um par de chaves públicas e privadas RSA 4096 bits do lado do cliente.
+    Chave Pública e privada fica do lado do cliente
+    Chave pública fica do lado do servidor
+    INPUT: email
+    OUTPUT: Par de chaves pública/privada
+* Login - Chaves Publica/privada
+    Login é feito com a chave privada do utilizador (lado do cliente apenas) que é comparada com a chave pública do lado do servidor.
+    INPUT: email + chave privada
+
 * Criar Vault (Combinação de apenas 1 user:password:dominio)
 * Partilhar Vault
 
