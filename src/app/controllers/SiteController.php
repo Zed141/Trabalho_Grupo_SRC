@@ -63,7 +63,7 @@ final class SiteController extends Controller {
      * @return mixed
      */
     public function actionIndex() {
-        return '//TODO: start project development';
+        return $this->render('index');
     }
 
     /**

@@ -1,0 +1,10 @@
+Funcionalidades:
+* Register - Chaves Pub/priv
+* Login - Chaves Pub/priv
+* Criar Vault (Combinação de apenas 1 user:password:dominio)
+* Partilhar Vault
+
+
+Esrutura:
+* DB - Sqlite
+* Cifra - RSA (Diffie-Helman) + AES (stream)
