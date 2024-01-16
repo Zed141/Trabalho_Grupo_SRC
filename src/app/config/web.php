@@ -31,6 +31,10 @@ $config = [
             //'rules' => [
             //],
         ],
+//        'session' => [
+//            // this is the name of the session cookie used for login on the app
+//            'name' => 'projsrc-app',
+//        ],
         //TODO: Configure and uncomment!
         //'assetManager' => [
         //    'bundles' => [

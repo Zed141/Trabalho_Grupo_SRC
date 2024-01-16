@@ -50,10 +50,6 @@ $config = [
             'schemaCacheDuration' => (24 * 60 * 60),
             'schemaCache' => 'cache'
         ],
-        'session' => [
-            // this is the name of the session cookie used for login on the app
-            'name' => 'projsrc-app',
-        ],
     ],
     'params' => []
 ];

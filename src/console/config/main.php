@@ -3,11 +3,6 @@
 use yii\console\controllers\FixtureController;
 use yii\log\FileTarget;
 
-$params = array_merge(
-    require __DIR__ . '/../../app/config/params.php',
-//TODO: require __DIR__ . '/params-local.php'
-);
-
 return [
     'id' => 'projsrc-console',
     'basePath' => dirname(__DIR__),
