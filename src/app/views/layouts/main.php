@@ -4,7 +4,7 @@
 /** @var string $content */
 
 use app\widgets\Alert;
-use frontend\assets\AppAsset;
+use app\assets\AppAsset;
 use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
@@ -24,7 +24,6 @@ AppAsset::register($this);
 </head>
 <body class="d-flex flex-column h-100">
 <?php $this->beginBody() ?>
-
 <header>
     <?php
     NavBar::begin([
