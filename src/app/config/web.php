@@ -4,6 +4,7 @@ $config = [
     'id' => 'projsrc-app',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'app\controllers',
+    'defaultRoute' => 'app/index',
     'components' => [
         'request' => [
             'csrfParam' => '_csrfweb',
@@ -22,7 +23,7 @@ $config = [
             ],
         ],
         'errorHandler' => [
-            'errorAction' => 'site/error'
+            'errorAction' => 'app/error'
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
