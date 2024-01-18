@@ -1,3 +1,14 @@
+# Descrição da ideia/princípio
+
+servidor guarda/gere passwords em "vaults" cifrados
+    # cada  "vault" regista metadados (url, username, observações, etc.) e a password de acesso ao serviço relacionado; ex.: {descricao: "Dropbox", url: https://dropbox.com, username: slopes; token|data: <password cifrada>}
+    # o "token" ou "data" é o valor crifrado com chave simétrica (AES?) e codificado em base64, da password (ou de outros dados relevantes)
+    # a chave simétrica para cifrar os dados é gerada aleatoriamente pelo servidor
+    # depois de gerada e usada para cifrar os dados (token) a chave simétrica é cifrada com a chave pública do utilizador e também guardada no servidor
+    # o servidor não consegue decrifar o token porque deixa de ter a chave, está cifrada com a publica do user e o servidor não tem a privada
+    # o servidor precisa enviar ao utilizador (cliente) os dados cifrados (da chave simétrica) para que o cliente decifre com a privada e devolva ao servidor a chave decifrada
+    # o servidor usa a chave decrifrada para decifrar o token e devolver o conteúdo decifrado ao utilizador
+
 Funcionalidades:
 * Register - Chaves Pub/priv
     Criado um par de chaves públicas e privadas RSA 4096 bits do lado do cliente.
@@ -18,16 +29,26 @@ Esrutura:
 * Cifra - RSA (Diffie-Helman) + AES (stream)
 
 
-> servidor guarda/gere passwords em "vaults" cifrados
-    # cada  "vault" regista metadados (url, username, observações, etc.) e a password de acesso ao serviço relacionado; ex.: {descricao: "Dropbox", url: https://dropbox.com, username: slopes; token|data: <password cifrada>}
-    # o "token" ou "data" é o valor crifrado com chave simétrica (AES?) e codificado em base64, da password (ou de outros dados relevantes)
-    # a chave simétrica para cifrar os dados é gerada aleatoriamente pelo servidor
-    # depois de gerada e usada para cifrar os dados (token) a chave simétrica é cifrada com a chave pública do utilizador e também guardada no servidor
-    # o servidor não consegue decrifar o token porque deixa de ter a chave, está cifrada com a publica do user e o servidor não tem a privada
-    # o servidor precisa enviar ao utilizador (cliente) os dados cifrados (da chave simétrica) para que o cliente decifre com a privada e devolva ao servidor a chave decifrada
-    # o servidor usa a chave decrifrada para decifrar o token e devolver o conteúdo decifrado ao utilizador
 
 
+
+Sitemap:
+/app/index
+/app/login
+    public function actionLogout(): Response {
+    public function actionProfile() {
+    public function actionSettings() {
+    public function actionDocumentation() {
+    public function actionCopyright() {
+    public function actionChangelog() {
+
+    /vault/
+      public function actionIndex(): string {
+        public function actionCreate(): Response|string {
+        public function actionUpdate(?int $id = null): Response|string {
+        public function actionDelete(int $id) {
+        public function actionRevokeAccess(int $vid, int $uid) {
+        public function actionShare(int $vid, int $uid) {
 
 NOMES EXEMPLO:
     SecurePassVault
@@ -50,7 +71,6 @@ NOMES EXEMPLO:
     EncryptedArmor
     CipherFortress
     PassSafeGuard
-
     VaultCrypt
     EncryptionVault
     PasswordlessGuard
