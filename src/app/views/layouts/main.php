@@ -48,7 +48,7 @@ $this->beginPage();
                         <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
                            aria-label="Open user menu">
                             <span class="avatar avatar-sm"
-                                  style="background-image: url(./static/avatars/000m.jpg)"></span>
+                                  style="background-image: url(/static/images/avatar-1577909_640.png)"></span>
                             <div class="d-none d-xl-block ps-2">
                                 <div>&lt;user name&gt;</div>
                                 <div class="mt-1 small text-muted">smaller example text</div>
