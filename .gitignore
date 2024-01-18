@@ -5,3 +5,4 @@ src/bin/local-php-security-checker
 /src/vendor/
 /src/public/demo
 /src/bin/*.sqlite
+.idea/dataSources.xml
