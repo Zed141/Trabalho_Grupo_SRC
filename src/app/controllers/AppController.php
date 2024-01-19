@@ -21,7 +21,8 @@ use yii\web\Response;
  * Main application controller.
  * Handles all generic actions, site and user related.
  */
-final class AppController extends Controller {
+final class AppController extends Controller
+{
 
 //    //TODO: Enable once  APP is pre-live
 //    /**
@@ -48,7 +49,8 @@ final class AppController extends Controller {
     /**
      * {@inheritdoc}
      */
-    public function actions() {
+    public function actions()
+    {
         return [
             'error' => [
                 'class' => ErrorAction::class,
@@ -59,14 +61,16 @@ final class AppController extends Controller {
     /**
      * @return string
      */
-    public function actionIndex(): string {
+    public function actionIndex(): string
+    {
         return $this->render('index');
     }
 
     /**
      * @return string|\yii\web\Response
      */
-    public function actionLogin(): Response|string {
+    public function actionLogin(): Response|string
+    {
         $this->layout = 'login';
 
         if (!Yii::$app->user->isGuest) {
@@ -79,42 +83,73 @@ final class AppController extends Controller {
     /**
      * @return \yii\web\Response
      */
-    public function actionBootstrapLogin(): Response {
-        return $this->asJson([]);
+    public function actionBootstrapLogin(): Response
+    {
+        $request = Yii::$app->request;
+        $email = $request->post('email');
+        if (empty($email)) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Email is a required field.')]);
+        }
+
+        $account = //Account::...
+        if (!$account) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong user or credentials.')]);
+        }
+
+        $challenge = $account->generateChallenge();
+        return $this->asJson(['ok' => true, 'challenge' => $challenge]);
     }
 
     /**
      * @return \yii\web\Response
      */
-    public function actionConfirmLogin(): Response {
-        return $this->asJson([]);
+    public function actionConfirmLogin(): Response
+    {
+        $request = Yii::$app->request;
+        $token = $request->post('token');
+        if (empty($token)) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '')]);
+        }
+
+        if (!$account->isTokenValid($token)) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '')]);
+        }
+
+        //TODO: login!
+        return $this->asJson(['ok' => true]);
     }
 
     /**
      * @return \yii\web\Response
      */
-    public function actionLogout(): Response {
+    public function actionLogout(): Response
+    {
         Yii::$app->user->logout();
         return $this->goHome();
     }
 
-    public function actionProfile() {
+    public function actionProfile()
+    {
         return '//TODO: Not implemented yet';
     }
 
-    public function actionSettings() {
+    public function actionSettings()
+    {
         return '//TODO: Not implemented yet';
     }
 
-    public function actionDocumentation() {
+    public function actionDocumentation()
+    {
         return '//TODO: Not implemented yet';
     }
 
-    public function actionCopyright() {
+    public function actionCopyright()
+    {
         return '//TODO: Not implemented yet';
     }
 
-    public function actionChangelog() {
+    public function actionChangelog()
+    {
         return '//TODO: Not implemented yet';
     }
 }

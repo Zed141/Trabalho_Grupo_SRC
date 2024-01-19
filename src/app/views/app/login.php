@@ -1,7 +1,6 @@
 <?php
 
 use app\helpers\SvgIconIndex;
-use yii\helpers\Url;
 
 /** @var yii\web\View $this */
 
