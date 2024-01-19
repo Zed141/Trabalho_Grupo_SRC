@@ -30,6 +30,12 @@ final class Vault extends \app\forms\BaseForm {
     /** @var string|null */
     public ?string $notes = null;
 
+    /**
+     * @param \yii\db\Connection  $db
+     * @param \app\orm\User       $user
+     * @param \app\orm\Vault|null $vault
+     * @param array               $config
+     */
     public function __construct(Connection $db, USer $user, Model $vault = null, array $config = []) {
         $this->db = $db;
         $this->user = $user;

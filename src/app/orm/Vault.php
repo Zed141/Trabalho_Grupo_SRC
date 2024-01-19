@@ -2,6 +2,7 @@
 
 namespace app\orm;
 
+use Yii;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
@@ -26,10 +27,24 @@ final class Vault extends ActiveRecord {
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels() {
+        return [
+            'id' => Yii::t('app', '#'),
+            'description' => Yii::t('app', 'Description'),
+            'owner_id' => Yii::t('app', 'Owner'),
+            'username' => Yii::t('app', 'Username'),
+            'data' => Yii::t('app', 'Password'),
+            'url' => Yii::t('app', 'URL'),
+            'notes' => Yii::t('app', 'Adicional information'),
+        ];
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getOwner(): ActiveQuery {
         return $this->hasOne(User::class, ['id' => 'owner_id']);
     }
-
 }

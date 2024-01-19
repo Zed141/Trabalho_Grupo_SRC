@@ -63,21 +63,31 @@ final class AppController extends Controller {
         return $this->render('index');
     }
 
-    public function actionLogin() {
-//        //TODO: Example code, remove/rewrite
-//        if (!Yii::$app->user->isGuest) {
-//            return $this->goHome();
-//        }
-//
-//        $model = new LoginForm();
-//        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-//            return $this->goBack();
-//        }
-//
-//        $model->password = '';
-//        return $this->render('login', [
-//            'model' => $model,
-//        ]);
+    /**
+     * @return string|\yii\web\Response
+     */
+    public function actionLogin(): Response|string {
+        $this->layout = 'login';
+
+        if (!Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        return $this->render('login');
+    }
+
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionBootstrapLogin(): Response {
+        return $this->asJson([]);
+    }
+
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionConfirmLogin(): Response {
+        return $this->asJson([]);
     }
 
     /**

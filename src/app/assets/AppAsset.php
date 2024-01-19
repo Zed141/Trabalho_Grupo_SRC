@@ -12,16 +12,14 @@ class AppAsset extends AssetBundle {
     public $baseUrl = '@web';
     public $css = [
         '/static/theme/css/tabler.min.css',
-        '/static/theme/css/tabler-flags.min.css',
-        '/static/theme/css/tabler-payments.min.css',
-        '/static/theme/css/tabler-vendors.min.css',
-        '/static/theme/css/inter-font.css',
-        //'/static/theme/css/demo.min.css'
+        //'/static/theme/css/tabler-flags.min.css',
+        //'/static/theme/css/tabler-payments.min.css',
+        //'/static/theme/css/tabler-vendors.min.css',
+        '/static/theme/css/inter-font.css'
     ];
 
     public $js = [
-        '/static/theme/js/tabler.min.js',
-        //'/static/theme/js/demo.min.js'
+        '/static/theme/js/tabler.min.js'
     ];
 
     public $depends = [

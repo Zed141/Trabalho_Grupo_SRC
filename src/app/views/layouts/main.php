@@ -1,6 +1,7 @@
 <?php
 
 use app\assets\AppAsset;
+use app\helpers\SvgIconIndex;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -11,6 +12,8 @@ AppAsset::register($this);
 
 $baseUrl = Yii::$app->urlManager->baseUrl;
 $subtitle = $this->params['subtitle'] ?? null;
+$buttons = $this->params['buttons'] ?? [];
+
 $this->beginPage();
 ?>
     <!doctype html>
@@ -35,9 +38,9 @@ $this->beginPage();
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                    <a href="<?= $baseUrl ?>">
-                        <!-- //TODO: APP SRC LOGO! -->
-                        <img src="./static/logo.svg" width="110" height="32" alt="SRC" class="navbar-brand-image">
+                    <a href="<?= $baseUrl ?>/">
+                        <img src="/static/images/logo2.png" width="110" height="32" alt="Ciphered Lock"
+                             class="navbar-brand-image">
                     </a>
                 </h1>
                 <div class="navbar-nav flex-row order-md-last">
@@ -71,12 +74,46 @@ $this->beginPage();
             <!-- Page header -->
             <div class="page-header d-print-none">
                 <div class="container-xl">
-                    <div class="row g-2 align-items-center">
+                    <div class="row g-2 align-items-center"> <!-- -->
                         <div class="col">
                             <?php if (!empty($subtitle)) { ?>
                                 <div class="page-pretitle"></div>
                             <?php } ?>
                             <h2 class="page-title"><?= Html::encode($this->title) ?></h2>
+                        </div>
+                        <div class="col-auto ms-auto d-print-none">
+                            <div class="btn-list">
+                                <?php if (!empty($buttons)) {
+                                    foreach ($buttons as $button) {
+                                        switch ($button->type) {
+                                            case 'single':
+                                                $tag = '<a href="' . Url::to($button->url) . '">' . $button->label . '</a>';
+                                                if ($button->actionBtn) {
+                                                    $tag = '<button type="button" class="btn"' . (!empty($button->url) ? 'data-action="' . $button->url . '"' : '') . '>' . $button->label . '</button>';
+                                                }
+                                                echo '<span class="d-none d-sm-inline">', $tag, '</span>';
+                                                break;
+                                            case 'group':
+
+                                                $data = trim(implode(' ', $button->data));
+                                                if ($button->actionBtn) {
+                                                    echo '<button type="button" class="btn btn-primary d-none d-sm-inline-block" ', $data . '>',
+                                                    SvgIconIndex::icon(SvgIconIndex::PLUS), $button->label, '</button>',
+                                                    '<button type="button" class="btn btn-primary d-sm-none btn-icon" ', $data,
+                                                    ' aria-label="', $button->labelSm, '"></button>';
+                                                    break;
+                                                }
+
+                                                echo '<a href="', Url::to([$button->url]), '" class="btn btn-primary d-none d-sm-inline-block" ',
+                                                $data, '">', SvgIconIndex::icon(SvgIconIndex::PLUS), $button->label, '</a>',
+                                                '<a href="', Url::to([$button->url]), '" class="btn btn-primary d-sm-none btn-icon" ',
+                                                $data, ' aria-label="', $button->labelSm, '">', SvgIconIndex::icon(SvgIconIndex::PLUS), '</a>';
+                                                break;
+                                        }
+                                    }
+                                }
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </div>

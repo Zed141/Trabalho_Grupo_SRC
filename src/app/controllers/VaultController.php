@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\filters\Vaults;
 use app\orm\User;
 use app\orm\Vault;
 use app\forms\Vault as Form;
@@ -38,14 +39,9 @@ final class VaultController extends Controller {
         //TODO: $user = Yii::$app->user->getId();
         $userId = 1;
 
-        //TODO: Mover para gridview && provider
-        $vaultListQry = Vault::find()
-            ->alias('v')
-            ->innerJoin(VaultAccess::tableName() . ' AS va', 'v.id = va.vault_id')
-            ->where(['va.user_id' => $userId])
-            ->asArray();
-
-        return $this->render('index', ['data' => $vaultListQry->all()]);
+        $filter = new Vaults();
+        $dataProvider = $filter->search(Yii::$app->request->queryParams);
+        return $this->render('index', ['provider' => $dataProvider]);
     }
 
     /**
