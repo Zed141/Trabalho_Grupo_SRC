@@ -2,17 +2,8 @@
 
 namespace app\controllers;
 
-use app\models\LoginForm;
-use app\models\PasswordResetRequestForm;
-use app\models\ResendVerificationEmailForm;
-use app\models\ResetPasswordForm;
-use app\models\VerifyEmailForm;
+use app\models\Account;
 use Yii;
-use yii\base\InvalidArgumentException;
-use yii\captcha\CaptchaAction;
-use yii\filters\AccessControl;
-use yii\filters\VerbFilter;
-use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
@@ -21,8 +12,7 @@ use yii\web\Response;
  * Main application controller.
  * Handles all generic actions, site and user related.
  */
-final class AppController extends Controller
-{
+final class AppController extends Controller {
 
 //    //TODO: Enable once  APP is pre-live
 //    /**
@@ -49,8 +39,7 @@ final class AppController extends Controller
     /**
      * {@inheritdoc}
      */
-    public function actions()
-    {
+    public function actions() {
         return [
             'error' => [
                 'class' => ErrorAction::class,
@@ -61,18 +50,15 @@ final class AppController extends Controller
     /**
      * @return string
      */
-    public function actionIndex(): string
-    {
+    public function actionIndex(): string {
         return $this->render('index');
     }
 
     /**
      * @return string|\yii\web\Response
      */
-    public function actionLogin(): Response|string
-    {
+    public function actionLogin(): Response|string {
         $this->layout = 'login';
-
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
@@ -82,16 +68,16 @@ final class AppController extends Controller
 
     /**
      * @return \yii\web\Response
+     * @throws \Exception
      */
-    public function actionBootstrapLogin(): Response
-    {
+    public function actionBootstrapLogin(): Response {
         $request = Yii::$app->request;
         $email = $request->post('email');
         if (empty($email)) {
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Email is a required field.')]);
         }
 
-        $account = //Account::...
+        $account = Account::findByEmail($email);
         if (!$account) {
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong user or credentials.')]);
         }
@@ -102,54 +88,69 @@ final class AppController extends Controller
 
     /**
      * @return \yii\web\Response
+     * @throws \Exception
      */
-    public function actionConfirmLogin(): Response
-    {
+    public function actionConfirmLogin(): Response {
         $request = Yii::$app->request;
         $token = $request->post('token');
         if (empty($token)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+        }
+
+        $email = $request->post('email');
+        if (empty($email)) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+        }
+
+        $account = Account::findByEmail($email);
+        if (!$account) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
         }
 
         if (!$account->isTokenValid($token)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
         }
 
-        //TODO: login!
+        $user = $account->getUser();
+        $user->last_login = date('Y-m-d H:i:s');
+        if (!$user->save(false)) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+        }
+
+        Yii::$app->user->login($account);
         return $this->asJson(['ok' => true]);
     }
 
     /**
      * @return \yii\web\Response
      */
-    public function actionLogout(): Response
-    {
+    public function actionLogout(): Response {
         Yii::$app->user->logout();
         return $this->goHome();
     }
 
-    public function actionProfile()
-    {
-        return '//TODO: Not implemented yet';
+    public function actionProfile(): string {
+        //TODO: Not implemented yet';
+        return $this->render('profile');
     }
 
-    public function actionSettings()
-    {
-        return '//TODO: Not implemented yet';
+    public function actionSettings(): string {
+        //TODO: Not implemented yet';
+        return $this->render('settings');
     }
 
-    public function actionDocumentation()
-    {
-        return '//TODO: Not implemented yet';
+    public function actionDocumentation(): string {
+        //TODO: Not implemented yet';
+        return $this->render('documentation');
     }
 
-    public function actionCopyright()
-    {
-        return '//TODO: Not implemented yet';
+    public function actionCopyright(): string {
+        //TODO: Not implemented yet';
+        return $this->render('copyright');
     }
 
-    public function actionChangelog()
-    {
-        return '//TODO: Not implemented yet';
+    public function actionChangelog(): string {
+        //TODO: Not implemented yet';
+        return $this->render('changelog');
     }
 }

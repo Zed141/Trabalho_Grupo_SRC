@@ -25,7 +25,7 @@ final class VaultAccess extends ActiveRecord {
      * {@inheritdoc}
      */
     public static function tableName() {
-        return '{{vault_access}}';
+        return '{{%vault_access}}';
     }
 
     /**

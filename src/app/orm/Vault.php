@@ -23,7 +23,7 @@ final class Vault extends ActiveRecord {
      * {@inheritdoc}
      */
     public static function tableName() {
-        return '{{vaults}}';
+        return '{{%vaults}}';
     }
 
     /**

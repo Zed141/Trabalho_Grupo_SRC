@@ -7,6 +7,7 @@ use app\orm\User;
 use app\orm\Vault;
 use app\forms\Vault as Form;
 use app\orm\VaultAccess;
+use Exception;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
@@ -48,7 +49,7 @@ final class VaultController extends Controller {
      * @return \yii\web\Response|string
      */
     public function actionCreate(): Response|string {
-        //TODO: User web != User orm!
+        //TODO: rewrite,it should be AJAX based!
         /** @var \app\orm\User $user */
         $user = Yii::$app->user->identity;
         $form = new Form(Yii::$app->getDb(), $user);
@@ -71,10 +72,9 @@ final class VaultController extends Controller {
      * @return \yii\web\Response|string
      */
     public function actionUpdate(?int $id = null): Response|string {
-        //TODO: User web != User orm!
+        //TODO: rewrite,it should be AJAX based!
         /** @var \app\orm\User $user */
         $user = Yii::$app->user->identity;
-
         if (!$id) {
             //TODO: ... error
             return $this->redirect(['index']);
@@ -96,7 +96,7 @@ final class VaultController extends Controller {
             //TODO: show message to user
         }
 
-        return $this->render('create', [
+        return $this->render('update', [
             'model' => $form
         ]);
     }
@@ -105,19 +105,53 @@ final class VaultController extends Controller {
         //TODO: ...
     }
 
-    public function actionRevokeAccess(int $vid, int $uid) {
-        //TODO: ...
+    /**
+     * Removes access to a vault, from the specified user. The user making the call has to own the vault.
+     *
+     * @param int $vid Vault ID
+     * @param int $uid ID of the user being revoked.
+     *
+     * @return \yii\web\Response
+     */
+    public function actionRevokeAccess(int $vid, int $uid): Response {
+        $vault = Vault::find()->where(['id' => $vid, 'owner_id' => Yii::$app->user->identity->getId()])->one();
+        if (!$vault) {
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Unknown or invalid vault.')]);
+        }
+
+        $transaction = Yii::$app->getDb()->beginTransaction();
+        try {
+            VaultAccess::deleteAll(['user_id' => $uid, 'vault_id' => $vid]);
+            $transaction->commit();
+
+            return $this->asJson(['ok' => true]);
+        } catch (Exception $ex) {
+            $transaction->rollBack();
+            return $this->asJson(['ok' => false, 'reason' => $ex->getMessage()]);
+        }
     }
 
-    public function actionShare(int $vid, int $uid) {
-        //TODO: ...
-        $userId = 1;
+    /**
+     * @param int $vid
+     * @param int $uid
+     *
+     * @return \yii\web\Response
+     */
+    public function actionShare(int $vid, int $uid): Response {
+        /** @var \app\orm\User $sharedWith */
         $sharedWith = User::find()->where(['id' => $uid, 'active' => 1])->one();
         if (!$sharedWith) {
             return $this->asJson(['ok' => false, 'message' => 'Unknown or invalid user.']);
         }
 
-        $accessInfo = VaultAccess::find()->where(['vault_id' => $vid, 'user_id' => $userId])->one();
+        /** @var \app\orm\VaultAccess $accessInfo */
+        $accessInfo = VaultAccess::find()
+            ->where([
+                'vault_id' => $vid,
+                'user_id' => Yii::$app->user->identity->getId()
+            ])
+            ->one();
+
         if (!$accessInfo) {
             return $this->asJson(['ok' => false, 'message' => 'Unknown or invalid vault.']);
         }
