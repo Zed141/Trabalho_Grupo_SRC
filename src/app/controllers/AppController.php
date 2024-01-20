@@ -4,6 +4,8 @@ namespace app\controllers;
 
 use app\models\Account;
 use Yii;
+use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
@@ -14,27 +16,27 @@ use yii\web\Response;
  */
 final class AppController extends Controller {
 
-//    //TODO: Enable once  APP is pre-live
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function behaviors() {
-//        return [
-//            'access' => [
-//                'class' => AccessControl::class,
-//                'only' => ['logout', 'signup'],
-//                'rules' => [
-//                    ['actions' => ['logout'], 'allow' => true, 'roles' => ['@'],],
-//                ],
-//            ],
-//            'verbs' => [
-//                'class' => VerbFilter::class,
-//                'actions' => [
-//                    'logout' => ['post'],
-//                ],
-//            ],
-//        ];
-//    }
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors() {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*'],],
+                    ['actions' => ['profile', 'settings', 'logout'], 'allow' => true, 'roles' => ['@'],],
+                    ['actions' => ['login'], 'allow' => true, 'roles' => ['?'],],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'logout' => ['post'],
+                ],
+            ],
+        ];
+    }
 
     /**
      * {@inheritdoc}

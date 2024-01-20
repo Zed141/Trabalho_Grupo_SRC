@@ -17,7 +17,7 @@ $config = [
             'identityClass' => 'app\models\Account',
             'enableSession' => true,
             'enableAutoLogin' => true,
-            'loginUrl' => ['site/login'],
+            'loginUrl' => ['app/login'],
             'identityCookie' => [
                 'name' => '_identity-projsrc', 'httpOnly' => true
             ],

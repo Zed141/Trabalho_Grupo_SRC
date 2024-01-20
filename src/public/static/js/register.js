@@ -45,7 +45,10 @@
     const arrayBufferToPEM = (buffer, type) => {
         const base64 = arrayBufferToBase64(buffer);
         const formattedBase64 = base64.match(/.{1,64}/g).join('\n');
-        return `-----BEGIN ${type}-----\n${formattedBase64}\n-----END ${type}-----`;
+
+        //return `-----BEGIN ${type}-----\n${formattedBase64}\n-----END ${type}-----`;
+        //TODO: Validate!!
+        return formattedBase64;
     };
 
     /**
@@ -125,7 +128,7 @@
                 }).done((response) => {
                     if (!response.ok) {
                         //TODO: alert or something...
-                        console.error(response);
+                        console.error(response.reason);
                         return;
                     }
 

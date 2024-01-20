@@ -109,7 +109,9 @@ final class Account extends BaseObject implements IdentityInterface {
 
         $key = $this->user->key;
         //TODO: rsa cipher using pub key and base64
-        return hash('sha256', $this->user->email . Yii::$app->security->generateRandomString() . time());
+        //return hash('sha256', $this->user->email . Yii::$app->security->generateRandomString() . time());
+        //TODO: DEBUG ONLY!
+        return hash('sha256', $this->user->email);
     }
 
     /**
