@@ -20,6 +20,47 @@
         return bytes;
     };
 
+    // Function to decode base64 to ArrayBuffer
+    function base64ToArrayBuffer(base64) {
+        // Ensure base64 is a string
+        if (typeof base64 !== 'string') {
+            console.error('Expected a string for base64, but received:', typeof base64);
+            throw new TypeError('base64 must be a string');
+        }
+
+        // Clean the base64 string
+        const cleanedBase64 = base64.replace(/[\r\n]+/g, '').trim();
+
+        try {
+            const binaryString = window.atob(cleanedBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        } catch (e) {
+            console.error("Error converting base64 to ArrayBuffer:", e);
+            throw e;
+        }
+    }
+
+
+    async function decryptData(privateKey, encryptedData) {
+        const encryptedArrayBuffer = base64ToArrayBuffer(encryptedData);
+        try {
+            const decryptedBuffer = await window.crypto.subtle.decrypt(
+                {
+                    name: "RSA-OAEP"
+                },
+                privateKey,
+                encryptedArrayBuffer
+            );
+            return new TextDecoder().decode(decryptedBuffer);
+        } catch (error) {
+            console.error("Decryption failed:", error);
+        }
+    }
+
     const getDBVersion = (dbName) => {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(dbName);
@@ -98,8 +139,8 @@
                         .then(db => {
                             //fetchDataByKeyFromDB(db, email, "publicKeyPEM")
                             fetchDataByKeyFromDB(db, email, "kPair")
-                                .then(data => {
-
+                                .then(keyPair => {
+                                    console.log(keyPair);
                                     $.ajax(loginStage1Url, {
                                         method: 'POST',
                                         dataType: 'json',
@@ -113,22 +154,49 @@
                                             return;
                                         }
 
-                                        const ciphered = atob(response.challenge);
+
+
+                                        console.log("cipheredb64", ciphered);
+                                        //const ciphered = atob(response.challenge);
                                         if (ciphered.length <= 0) {
                                             console.log('Ciphered é inválido!');
                                             return;
                                         }
 
-                                        let encoder = new TextEncoder();
-                                        const buffer = encoder.encode(ciphered).buffer;
+                                        const cipheredArrayBuffer = base64ToArrayBuffer(ciphered);
+                                        console.log("cipheredbuffer", cipheredArrayBuffer);
 
-                                        window.crypto.subtle.decrypt({
+                                        debugger;
+
+                                        decryptData(keyPair.privateKey, cipheredArrayBuffer).then(
+                                            decryptedText => console.log("Decrypted Text: ", decryptedText)
+                                        ).catch(console.error);
+
+                                        debugger;
+
+
+
+
+
+
+
+
+
+
+                                        const buffer = new TextEncoder().encode(ciphered).buffer;
+                                        console.log("ciphered: ", ciphered);
+                                        console.log("buffer: ", buffer);
+
+                                        console.log(keyPair.privateKey instanceof CryptoKey);
+                                        console.log(keyPair.privateKey.usages);
+                                        console.log(buffer instanceof ArrayBuffer);
+                                        window.crypto.subtle.decrypt(
+                                            {
                                             name: "RSA-OAEP",
-                                            modulusLength: 4096,
-                                            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-                                            hash: "SHA-256"
-                                        }, data.privateKey, buffer)
+                                            }
+                                        , keyPair.privateKey, buffer)
                                             .then(token => {
+                                                console.log(decryptData);
                                                 debugger;
                                                 $.ajax(loginStage2Url, {
                                                     method: 'POST',
