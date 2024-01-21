@@ -96,31 +96,65 @@
                 .then(version => {
                     openDatabase(dbName, email, version)
                         .then(db => {
-                            fetchDataByKeyFromDB(db, email, "publicKeyPEM")
+                            //fetchDataByKeyFromDB(db, email, "publicKeyPEM")
+                            fetchDataByKeyFromDB(db, email, "kPair")
                                 .then(data => {
-                                    return;
 
-                                    //TODO: REVER E REATIVAR
-                                    console.log("data", data);
-                                    publicKeyPEM = data;
-                                    //In case the public key is missing from the Indexed DB has to be fetched from the Database
-                                    console.log(publicKeyPEM);
-                                    //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
-                                    //TODO: CONFIRMAR!
-                                    if (publicKeyPEM.length === 0) {
-                                        $.ajax('/app/get-public-pem', {
-                                            method: 'POST',
-                                            dataType: 'json',
-                                            contentType: 'application/json',
-                                            data: JSON.stringify({
-                                                email: email,
-                                            })
-                                        }).done((response) => {
-                                            if (response.ok) {
-                                                console.log(response, response.data);
-                                            }
+                                    $.ajax(loginStage1Url, {
+                                        method: 'POST',
+                                        dataType: 'json',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify({
+                                            email: email
+                                        })
+                                    }).done((response) => {
+                                        if (!response.ok) {
+                                            console.error(response.reason);
+                                            return;
+                                        }
+
+                                        const ciphered = atob(response.challenge);
+                                        if (ciphered.length <= 0) {
+                                            console.log('Ciphered é inválido!');
+                                            return;
+                                        }
+
+                                        let encoder = new TextEncoder();
+                                        const buffer = encoder.encode(ciphered).buffer;
+
+                                        window.crypto.subtle.decrypt({
+                                            name: "RSA-OAEP",
+                                            modulusLength: 4096,
+                                            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+                                            hash: "SHA-256"
+                                        }, data.privateKey, buffer)
+                                            .then(token => {
+                                                debugger;
+                                                $.ajax(loginStage2Url, {
+                                                    method: 'POST',
+                                                    dataType: 'json',
+                                                    contentType: 'application/json',
+                                                    data: JSON.stringify({
+                                                        email: email,
+                                                        token: token
+                                                    })
+                                                }).done((response) => {
+                                                    if (!response.ok) {
+                                                        console.error(response.reason);
+                                                        return;
+                                                    }
+
+                                                    window.location.href = response.to;
+                                                }).fail((jqXHR, textStatus, errorThrown) => {
+                                                    console.error(textStatus, errorThrown);
+                                                });
+                                            }).catch(error => {
+                                            console.error('Error while decrypting data:', error);
                                         });
-                                    }
+
+                                    }).fail((jqXHR, textStatus, errorThrown) => {
+                                        console.error(textStatus, errorThrown);
+                                    });
                                 })
                                 .catch(error => {
                                     console.error('Error while fetching data:', error);
@@ -130,73 +164,6 @@
                             console.error('Failed to open database:', error);
                         })
                 });
-
-            $.ajax(loginStage1Url, {
-                method: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    email: email
-                })
-            }).done((response) => {
-                if (!response.ok) {
-                    //TODO: alert or something...
-                    console.error(response.reason);
-                    return;
-                }
-
-                const ciphered = atob(response.challenge);
-                if (ciphered.length <= 0) {
-                    //TODO: ERROR!
-                    return;
-                }
-
-                getDBVersion(dbName)
-                    .then(version => {
-                        openDatabase(dbName, email, version)
-                            .then(db => {
-                                fetchDataByKeyFromDB(db, email, "privateKeyPEM")
-                                    .then(storedPKey => {
-
-                                        const pKey = pemToArrayBuffer(storedPKey);
-                                        window.crypto.subtle.decrypt({
-                                            name: "RSA-OAEP",
-                                            modulusLength: 4096,
-                                            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-                                            hash: "SHA-256"
-                                        }, pKey, ciphered).then(token => {
-                                            $.ajax(loginStage2Url, {
-                                                method: 'POST',
-                                                dataType: 'json',
-                                                contentType: 'application/json',
-                                                data: JSON.stringify({
-                                                    email: email,
-                                                    token: token
-                                                })
-                                            }).done((response) => {
-                                                if (!response.ok) {
-                                                    console.error(response.reason);
-                                                    return;
-                                                }
-
-                                                window.location.href = response.to;
-                                            }).fail((jqXHR, textStatus, errorThrown) => {
-                                                console.error(textStatus, errorThrown);
-                                            });
-                                        });
-
-                                    }).catch(error => {
-                                    console.error('Error while fetching data:', error);
-                                });
-                            })
-                            .catch(error => {
-                                console.error('Failed to open database:', error);
-                            })
-                    });
-                //./getDBVersion para acesso à privada
-            }).fail((jqXHR, textStatus, errorThrown) => {
-                console.error(textStatus, errorThrown);
-            });
         });
     }
 })();

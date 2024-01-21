@@ -32,7 +32,7 @@
             const privateKeyPEM = arrayBufferToPEM(pkcs8, 'PRIVATE KEY');
 
             //Return Key Pair
-            return {publicKeyPEM, privateKeyPEM};
+            return {publicKeyPEM, privateKeyPEM, keyPair};
         } catch (error) {
             console.error("Key generation failed:", error);
         }
@@ -139,9 +139,9 @@
         btn.addEventListener('click', (e) => {
             const url = e.currentTarget.dataset.url;
 
-            generateRSAKeyPair().then(kPair => {
-                const publicKeyPEM = kPair.publicKeyPEM;
-                const privateKeyPEM = kPair.privateKeyPEM;
+            generateRSAKeyPair().then(keys => {
+                const publicKeyPEM = keys.publicKeyPEM;
+                const privateKeyPEM = keys.privateKeyPEM;
 
                 console.log("Public Key:", publicKeyPEM);
                 console.log("Private Key:", privateKeyPEM);
@@ -149,7 +149,8 @@
                 //Save PEMKeys to IndexedDB: //Public PEM Key + //Private PEM Key
                 let email = document.getElementById('register-email').value;
                 saveKey(dbName, email, publicKeyPEM, 'publicKeyPEM');
-                saveKey(dbName, email, privateKeyPEM, 'privateKeyPEM')
+                saveKey(dbName, email, privateKeyPEM, 'privateKeyPEM');
+                saveKey(dbName, email, keys.keyPair, 'kPair');
 
                 $.ajax(url, {
                     method: 'POST',
