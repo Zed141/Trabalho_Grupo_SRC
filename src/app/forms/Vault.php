@@ -6,15 +6,10 @@ use app\orm\User;
 use app\orm\VaultAccess;
 use Exception;
 use Yii;
-use yii\db\ActiveQuery;
 use app\orm\Vault as Model;
 use yii\db\Connection;
-use yii\helpers\StringHelper;
 
-/**
- *
- */
-final class Vault extends \app\forms\BaseForm {
+final class Vault extends BaseForm {
 
     private Connection $db;
     private User $user;
@@ -97,11 +92,10 @@ final class Vault extends \app\forms\BaseForm {
                     return false;
                 }
                 //TODO: subject to timing attacks
-                $secret = StringHelper::base64UrlEncode($encrypted);
+                $secret = base64_encode($encrypted);
             }
 
             $this->model->description = $this->description;
-
             $this->model->username = $this->url ? trim($this->username) : null;
             $this->model->url = $this->url ? trim($this->url) : null;
             $this->model->notes = $this->notes ? trim($this->notes) : null;

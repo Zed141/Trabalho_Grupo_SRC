@@ -22,20 +22,16 @@ final class VaultController extends Controller {
 //        return [
 //            'access' => [
 //                'class' => AccessControl::class,
-//                'only' => ['logout', 'signup'],
 //                'rules' => [
-//                    ['actions' => ['logout'], 'allow' => true, 'roles' => ['@'],],
+//                    ['actions' => ['index', 'create', 'update', 'delete', 'revoke-access', 'share'], 'allow' => true, 'roles' => ['@'],],
 //                ],
-//            ],
-//            'verbs' => [
-//                'class' => VerbFilter::class,
-//                'actions' => [
-//                    'logout' => ['post'],
-//                ],
-//            ],
+//            ]
 //        ];
 //    }
 
+    /**
+     * @return string
+     */
     public function actionIndex(): string {
         //TODO: $user = Yii::$app->user->getId();
         $userId = 1;
@@ -46,63 +42,102 @@ final class VaultController extends Controller {
     }
 
     /**
-     * @return \yii\web\Response|string
+     * @return \yii\web\Response
      */
-    public function actionCreate(): Response|string {
-        //TODO: rewrite,it should be AJAX based!
+    public function actionCreate(): Response {
+        $request = Yii::$app->request;
+        $data = [
+            'Vault[description]' => $request->post('description'),
+            'Vault[data]' => $request->post('data'),
+            'Vault[username]' => $request->post('username'),
+            'Vault[url]' => $request->post('url'),
+            'Vault[notes]' => $request->post('notes')
+        ];
+
         /** @var \app\orm\User $user */
         $user = Yii::$app->user->identity;
         $form = new Form(Yii::$app->getDb(), $user);
-        if ($form->load(Yii::$app->request->post())) {
+        if ($form->load($data)) {
             if ($form->save()) {
-                //TODO: show message to user
-                return $this->redirect(['update', 'id' => $form->getId()]);
+                return $this->asJson(['ok' => true]);
             }
-            //TODO: show message to user
+            return $this->asJson(['ok' => false, 'reason' => implode(' ', $form->getErrorSummary(true))]);
         }
 
-        return $this->render('create', [
-            'model' => $form
-        ]);
+        return $this->asJson(['ok' => false, 'reason' => 'Invalid request']);
     }
 
     /**
-     * @param int|null $id
-     *
      * @return \yii\web\Response|string
      */
-    public function actionUpdate(?int $id = null): Response|string {
-        //TODO: rewrite,it should be AJAX based!
-        /** @var \app\orm\User $user */
-        $user = Yii::$app->user->identity;
+    public function actionUpdate(): Response|string {
+        $request = Yii::$app->request;
+        $id = $request->post('id');
         if (!$id) {
-            //TODO: ... error
-            return $this->redirect(['index']);
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
         }
 
         /** @var \app\orm\Vault $vault */
-        $vault = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
+        $vault = Vault::find()->where(['id' => $id, 'owner_id' => 1, /*$user->id*/])->one();
         if (!$vault) {
-            //TODO: ... error
-            return $this->redirect(['index']);
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
         }
 
+        $data = [
+            'Vault[description]' => $request->post('description'),
+            'Vault[data]' => $request->post('data'),
+            'Vault[username]' => $request->post('username'),
+            'Vault[url]' => $request->post('url'),
+            'Vault[notes]' => $request->post('notes')
+        ];
+
+        //TODO: Fix login process!
+        /** @var \app\orm\User $user */
+        $user = Yii::$app->user->identity;
         $form = new Form(Yii::$app->getDb(), $user, $vault);
-        if ($form->load(Yii::$app->request->post())) {
+        if ($form->load($data)) {
             if ($form->save()) {
-                //TODO: show message to user
-                return $this->redirect(['update', 'id' => $form->getId()]);
+                return $this->asJson(['ok' => true]);
             }
-            //TODO: show message to user
+            return $this->asJson(['ok' => false, 'reason' => implode(' ', $form->getErrorSummary(true))]);
         }
 
-        return $this->render('update', [
-            'model' => $form
-        ]);
+        return $this->asJson(['ok' => false, 'reason' => 'Invalid request']);
     }
 
-    public function actionDelete(int $id) {
-        //TODO: ...
+    /**
+     * @param int $id
+     *
+     * @return \yii\web\Response
+     * @throws \Throwable
+     */
+    public function actionDelete(int $id): Response {
+        if (!$id) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
+        }
+        //TODO: $user = Yii::$app->user->identity;
+
+        /** @var \app\orm\Vault $vault */
+        //TODO: Fix login process!
+        $vault = Vault::find()->where(['id' => $id, 'owner_id' => 1, /*$user->id*/])->one();
+        if (!$vault) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
+        }
+
+        $transaction = Yii::$app->getDb()->beginTransaction();
+        try {
+            VaultAccess::deleteAll(['vault_id' => $id]);
+            if ($vault->delete() === false) {
+                $transaction->rollBack();
+                return $this->asJson(['ok' => false, 'reason' => implode(' ', $vault->getErrorSummary(true))]);
+            }
+
+            $transaction->commit();
+            return $this->asJson(['ok' => true, 'message' => Yii::t('app', 'Vault deleted successfully.')]);
+        } catch (Exception $ex) {
+            $transaction->rollBack();
+            return $this->asJson(['ok' => false, 'reason' => $ex->getMessage()]);
+        }
     }
 
     /**
@@ -156,21 +191,26 @@ final class VaultController extends Controller {
             return $this->asJson(['ok' => false, 'message' => 'Unknown or invalid vault.']);
         }
 
+        //TODO: ....
+        //decoded vault secret
+        $secret = 'DUMMY'; //TODO: secret from client in post data
+
+        $ciphered = null;
+        if (!openssl_public_encrypt($secret, $ciphered, $sharedWith->key)) {
+            return $this->asJson(['ok' => false, 'reason' => 'Encryption error.']);
+        }
+
         $newAccess = new VaultAccess();
         $newAccess->vault_id = $vid;
         $newAccess->user_id = $sharedWith->id;
-        //TODO: ...
-        $newAccess->secret = 'DUMMY';
+        $newAccess->secret = base64_encode($ciphered);
         if (!$newAccess->save(false)) {
             return $this->asJson(['ok' => false, 'message' => $newAccess->getErrorSummary(true)]);
         }
 
-        //TODO: ....
-        //new user ID
-        //decoded vault secret
 
+        $userName = $sharedWith->name;
         $vaultDescription = $accessInfo->vault->description;
-        $userName = 'TMP';
         return $this->asJson(['ok' => true, 'message' => "Vault '$vaultDescription' shared with $userName."]);
     }
 }

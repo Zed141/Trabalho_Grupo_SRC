@@ -2,6 +2,8 @@
 
 use app\components\GridView;
 use app\helpers\SvgIconIndex;
+use yii\helpers\Html;
+use yii\helpers\Url;
 
 /** @var yii\web\View $this */
 /** @var app\filters\Vaults $provider */
@@ -26,7 +28,13 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
         'columns' => [
             'description',
             'username',
-            'url'
+            'url',
+            [
+                'label' => '',
+                'content' => function ($model) {
+                    return Html::a('Edit', '#', ['data-id' => $model['id']]);
+                }
+            ]
             //TODO: links, formatting, etc.
             //[
             //'attribute' => '',
@@ -38,6 +46,8 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
     ]);
     ?>
 </div>
+
+<input type="hidden" id="details-url" value="<?= Url::to('/vault/details') ?>"/>
 
 <div class="modal modal-blur fade" id="modal-add-vault" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -95,7 +105,10 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
                 <button type="button" class="btn btn-link link-secondary"
                         data-bs-dismiss="modal"><?= Yii::t('app', 'Cancel') ?></button>
 
-                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal" id="btn-add-vault">
+                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal" id="btn-add-vault"
+                        data-createurl="<?= Url::to(['/vault/create']) ?>"
+                        data-updateurl="<?= Url::to(['/vault/update']) ?>"
+                        data-id="">
                     <?= SvgIconIndex::icon(SvgIconIndex::CHECK) ?>
                     <?= Yii::t('app', 'Save') ?>
                 </button>
