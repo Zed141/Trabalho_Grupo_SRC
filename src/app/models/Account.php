@@ -99,7 +99,7 @@ final class Account extends BaseObject implements IdentityInterface {
     }
 
     /**
-     * @return string
+     * @return string (base64 encoded)
      * @throws \Exception
      */
     public function generateChallenge(): string {
@@ -108,10 +108,16 @@ final class Account extends BaseObject implements IdentityInterface {
         }
 
         $key = $this->user->key;
-        //TODO: rsa cipher using pub key and base64
-        //return hash('sha256', $this->user->email . Yii::$app->security->generateRandomString() . time());
+        $challenge = '';
+        $result = openssl_public_encrypt($this->user->email, $challenge, $key);
+        if ($result === false){
+            return openssl_error_string();
+        }
+        else{
+            return base64_encode($challenge);
+        }
         //TODO: DEBUG ONLY!
-        return hash('sha256', $this->user->email);
+        //return hash('sha256', $this->user->email);
     }
 
     /**

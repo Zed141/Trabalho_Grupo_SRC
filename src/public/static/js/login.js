@@ -64,6 +64,9 @@
             if (email === undefined || email === null || email.length <= 0) {
                 return;
             }
+            else{
+
+            }
 
             const loginStage1Url = "e.currentTarget.dataset.stateurl2;";
             const loginStage2Url = e.currentTarget.dataset.stateurl2;
@@ -79,7 +82,27 @@
                 .then(db => {
                     fetchDataByKeyFromDB(db, storeName, "publicKeyPEM")
                         .then(data => {
+                            console.log("data", data);
                             publicKeyPEM = data;
+                            //In case the public key is missing from the Indexed DB has to be fetched from the Database
+                            console.log(publicKeyPEM);
+                            //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
+                            if (publicKeyPEM.length === 0){
+                                $.ajax('/app/getpublicpem',{
+                                    method: 'POST',
+                                    dataType: 'json',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({
+                                        email: email,
+                                    })
+                                }).done((response) => {
+                                        if (response.ok){
+                                            console.log(response, response.data);
+                                        }
+                                    }
+
+                                )
+                            }
                         })
                         .catch(error => {
                             console.error('Error while fetching data:', error);
@@ -89,31 +112,9 @@
                     console.error('Failed to open database:', error);
                 });
 
-            //In case the public key is missing from the Indexed DB has to be fetched from the Database
-
-            //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
-            if (publicKeyPEM.length === 0){
-                $.ajax('/app/getPublicPEM',{
-                    method: 'POST',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        email: email,
-                    })
-                }).done((response) => {
-                        if (response.ok){
-                            console.log(response, response.data);
-                        }
-                    }
-
-                )
-            }
-
-
-
             //TODO: read from storage
-            //const publicKeyPEM = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuLupstRTwG/UTuil9ukY\nXjVgD5DFH7scm2y7UVWBZDVlgYeSo7WetgSdgD9a85/GZMVkW6+qp7FgnqJQyCfj\nhkqCOQ/UqfAMIs0URjtq4bMKufFgemPE/c5UKbu/7MkZevbeJ7FPtcVWKdZ7Op8n\nukonh0iZg081ea0pQHmDjGS9afJTK3qojIAXDkqcaWM4AKw43kKe+N8pgPzsC4Nb\nZlnuHXhPOgYxrNqyDVSHRFLUWKm/Br0o4ccVIy2davOUNJxPQ7imYzf+fN2pkkDn\nshZjPrUM6RuJLGetpEISPDF+RoG17YLVCdo221ZMK/SMf1LcYcuItSbh2giah0cZ\ntiqUL26gFN67UwPb2r+hHQVLc5fXUy6Zgcn4IMY7hcF2A4aZ10wW8e5M/kwRCdza\ne101eh84OrgPZbzd+QRti8/5BSF/z8FxNS9FtmLPA+1bocUkPYc2rHEB97OuJh7e\nplGdHvwmBpwL8EVALd2842/Dd6WDnoD5QV9D1wFdVmLZEZqoRLeF4F8xpUSXsMp2\n3XGXh9F00ycKhKhad1jbDRphEeyn5hLL2u8RhaP2I3xEBhUZkm6AzVEjuvZ/oByP\nute5+yA+5d+RIPJ86gxUWwcaEsgbcMFvAaNbhNa6mGZ27XPN01UZHCjE5nz+XFqi\nO7RQcPc/TvDwPc3a1cc7pR8CAwEAAQ==";
-            $.ajax(loginStage1Url, {
+            //publicKeyPEM = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuLupstRTwG/UTuil9ukY\nXjVgD5DFH7scm2y7UVWBZDVlgYeSo7WetgSdgD9a85/GZMVkW6+qp7FgnqJQyCfj\nhkqCOQ/UqfAMIs0URjtq4bMKufFgemPE/c5UKbu/7MkZevbeJ7FPtcVWKdZ7Op8n\nukonh0iZg081ea0pQHmDjGS9afJTK3qojIAXDkqcaWM4AKw43kKe+N8pgPzsC4Nb\nZlnuHXhPOgYxrNqyDVSHRFLUWKm/Br0o4ccVIy2davOUNJxPQ7imYzf+fN2pkkDn\nshZjPrUM6RuJLGetpEISPDF+RoG17YLVCdo221ZMK/SMf1LcYcuItSbh2giah0cZ\ntiqUL26gFN67UwPb2r+hHQVLc5fXUy6Zgcn4IMY7hcF2A4aZ10wW8e5M/kwRCdza\ne101eh84OrgPZbzd+QRti8/5BSF/z8FxNS9FtmLPA+1bocUkPYc2rHEB97OuJh7e\nplGdHvwmBpwL8EVALd2842/Dd6WDnoD5QV9D1wFdVmLZEZqoRLeF4F8xpUSXsMp2\n3XGXh9F00ycKhKhad1jbDRphEeyn5hLL2u8RhaP2I3xEBhUZkm6AzVEjuvZ/oByP\nute5+yA+5d+RIPJ86gxUWwcaEsgbcMFvAaNbhNa6mGZ27XPN01UZHCjE5nz+XFqi\nO7RQcPc/TvDwPc3a1cc7pR8CAwEAAQ==";
+            $.ajax('/app/bootstraplogin', {
                 method: 'POST',
                 dataType: 'json',
                 contentType: 'application/json',

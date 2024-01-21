@@ -20,7 +20,7 @@ final class AppController extends Controller {
     /**
      * {@inheritdoc}
      */
-    public function behaviors() {
+    /*public function behaviors() {
         return [
             'access' => [
                 'class' => AccessControl::class,
@@ -37,7 +37,7 @@ final class AppController extends Controller {
                 ],
             ],
         ];
-    }
+    }*/
 
     /**
      * {@inheritdoc}
@@ -124,14 +124,14 @@ final class AppController extends Controller {
         return $this->asJson(['ok' => true]);
     }
 
-    public function getPublicPEM() {
+    public function actionGetPublicPEM(): Response{
         $request = Yii::$app->request;
         $email = $request->post('email');
         $user = User::find()->where(['email' => $email])->one();
         if ($user) {
-            $key = $user->key;
+            return $this->asJson(['ok' => true, 'publicKeyPEM' => $user->key]);
         } else {
-            return null;
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong Credentials.')]);
         }
     }
 

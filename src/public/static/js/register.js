@@ -68,19 +68,40 @@
 
 
     const dbName = 'SRC-DATABASE';
-    const storeName = 'UserStore';
+    //const storeName = 'UserStore';
+
+    //Function to get DB version needed to upgrade DB schema
+    const getDBVersion = (dbName) => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName);
+
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                const version = db.version;
+                db.close(); // Close the database connection
+                resolve(version);
+            };
+
+            request.onerror = (event) => {
+                reject('Database error: ' + event.target.errorCode);
+            };
+        });
+    };
 
     //Function to open the indexed database
-    const openDatabase = (dbName, storeName) => {
+    const openDatabase = (dbName, storeName, version) => {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
+            const request = indexedDB.open(dbName, version+1);
+
             request.onerror = (event) => {
                 reject('Database error: ' + event.target.errorCode);
             };
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                db.createObjectStore(storeName, {autoIncrement: true});
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName);
+                }
             };
 
             request.onsuccess = (event) => {
@@ -91,12 +112,33 @@
 
     //Function to store de key pair
     const saveKey = (dbName, storeName, key, keyType) => {
-        const db = openDatabase(dbName, storeName).then(db => {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const objectStore = transaction.objectStore(storeName);
+        let dbVersion = 0;
+        getDBVersion(dbName)
+            .then(version => {
+                dbVersion = version;
+                console.log(`Current version of the database '${dbName}': ${version}`);
+                openDatabase(dbName, storeName, dbVersion).then(db => {
+                    const transaction = db.transaction([storeName], 'readwrite');
+                    const objectStore = transaction.objectStore(storeName);
 
-            objectStore.put(key, keyType);
-        });
+                    const request = objectStore.put(key, keyType);
+
+                    request.onsuccess = () => {
+                        console.log('Key saved successfully');
+                        db.close(); // Close the database connection when done
+                    };
+
+                    request.onerror = (event) => {
+                        console.error('Error saving the key:', event.target.errorCode);
+                    };
+                }).catch(error => {
+                    console.error('Database error:', error);
+                });
+            })
+            .catch(error => {
+                console.error('Error getting database version:', error);
+            });
+
     };
 
     const btn = document.getElementById('register-btn');
@@ -116,16 +158,17 @@
                 console.log("Private Key:", privateKeyPEM);
 
                 //Save PEMKeys to IndexedDB: //Public PEM Key + //Private PEM Key
-                saveKey(dbName, storeName, publicKeyPEM, 'publicKeyPEM');
-                saveKey(dbName, storeName, privateKeyPEM, 'privateKeyPEM')
-
+                let $email = document.getElementById('register-email').value;
+                saveKey(dbName, $email, publicKeyPEM, 'publicKeyPEM');
+                saveKey(dbName, $email, privateKeyPEM, 'privateKeyPEM')
+                return;
                 $.ajax(url, {
                     method: 'POST',
                     dataType: 'json',
                     contentType: 'application/json',
                     data: JSON.stringify({
                         name: document.getElementById('register-name').value,
-                        email: document.getElementById('register-email').value,
+                        email: $email,
                         key: publicKeyPEM
                     })
                 }).done((response) => {
