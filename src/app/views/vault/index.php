@@ -95,7 +95,7 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
                 <button type="button" class="btn btn-link link-secondary"
                         data-bs-dismiss="modal"><?= Yii::t('app', 'Cancel') ?></button>
 
-                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal" id="btn-add-vault">
                     <?= SvgIconIndex::icon(SvgIconIndex::CHECK) ?>
                     <?= Yii::t('app', 'Save') ?>
                 </button>

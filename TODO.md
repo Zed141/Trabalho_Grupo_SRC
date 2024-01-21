@@ -24,7 +24,6 @@
 NOTA: Podemos passar isto para issues no github como funcionalidades a desenvolver.
 
 - **[POR FAZER]** Register - Criar uma nova conta de utilizador no sistema, enviado o par de Chaves Pub/Priv
-- Criado um par de chaves públicas e privadas RSA 4096 bits do lado do cliente.
 - Chave Pública e privada fica do lado do cliente
 - Chave pública fica do lado do servidor \
   INPUT: email \
