@@ -28,7 +28,7 @@ final class AppController extends Controller {
                 'rules' => [
                     ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*']],
                     ['actions' => ['profile', 'settings', 'logout'], 'allow' => true, 'roles' => ['@']],
-                    ['actions' => ['login', 'get-public-pem', 'bootstrap-login', 'confirm-login'], 'allow' => true, 'roles' => ['*']]
+                    ['actions' => ['login', 'get-public-pem', 'start-login', 'confirm-login'], 'allow' => true]
                 ],
             ],
             'verbs' => [

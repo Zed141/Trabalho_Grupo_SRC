@@ -1,5 +1,7 @@
 (async () => {
 
+    const dbName = 'SRC-DATABASE';
+
     /**
      * Function to generate RSA Public and Private Key pair.
      * @returns {{publicKeyPEM: string, privateKeyPEM: string}}
@@ -45,10 +47,7 @@
     const arrayBufferToPEM = (buffer, type) => {
         const base64 = arrayBufferToBase64(buffer);
         const formattedBase64 = base64.match(/.{1,64}/g).join('\n');
-
-        //return `-----BEGIN ${type}-----\n${formattedBase64}\n-----END ${type}-----`;
-        //TODO: Validate!!
-        return formattedBase64;
+        return `-----BEGIN ${type}-----\n${formattedBase64}\n-----END ${type}-----`;
     };
 
     /**
@@ -65,10 +64,6 @@
         }
         return window.btoa(binary);
     };
-
-
-    const dbName = 'SRC-DATABASE';
-    //const storeName = 'UserStore';
 
     //Function to get DB version needed to upgrade DB schema
     const getDBVersion = (dbName) => {
@@ -143,10 +138,7 @@
     if (btn !== null) {
         btn.addEventListener('click', (e) => {
             const url = e.currentTarget.dataset.url;
-            console.log("url: ", url);
-            console.log("To: ", to);
 
-            //TODO validar se a geração do par de chaves não deveria ser só depois de validar se é possível criar a conta
             generateRSAKeyPair().then(kPair => {
                 const publicKeyPEM = kPair.publicKeyPEM;
                 const privateKeyPEM = kPair.privateKeyPEM;
@@ -174,7 +166,7 @@
                         return;
                     }
 
-                    window.location.href = response.to;
+                    window.location.replace(response.to);
                 }).fail((jqXHR, textStatus, errorThrown) => {
                     console.error(textStatus, errorThrown);
                 });
