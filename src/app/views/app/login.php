@@ -23,7 +23,7 @@ $this->registerJsFile('/static/js/login.js');
                placeholder="<?= Yii::t('app', 'your@email.com') ?>">
     </div>
 
-    <div class="mb-2">
+    <!-- <div class="mb-2">
         <label class="form-label" for="key-info">
             <?= Yii::t('app', 'RSA Key') ?>
             <span class="form-label-description"><a href="<?= Url::to(['/register/index']) ?>">No key found?</a></span>
@@ -39,10 +39,13 @@ $this->registerJsFile('/static/js/login.js');
                   </a>
                 </span>
         </div>
-    </div>
+    </div> -->
 
     <div class="form-footer">
-        <button type="button" id="login-btn" class="btn btn-primary w-100"><?= Yii::t('app', 'Sign in') ?></button>
+        <button type="button" id="login-btn" class="btn btn-primary w-100"
+                data-stage1url="<?= Url::to(['/app/boostrap-login']) ?>"
+                data-stage2url="<?= Url::to(['/app/confirm-login']) ?>"
+        ><?= Yii::t('app', 'Sign in') ?></button>
     </div>
 </form>
 

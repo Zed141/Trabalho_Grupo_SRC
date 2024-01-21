@@ -99,25 +99,23 @@ final class Account extends BaseObject implements IdentityInterface {
     }
 
     /**
-     * @return string (base64 encoded)
-     * @throws \Exception
+     * @return array|null
+     * @throws \yii\base\Exception
      */
-    public function generateChallenge(): string {
+    public function generateChallenge(): ?array {
         if (!$this->user) {
-            throw new Exception('Invalid user authentication.');
+            return null;
         }
 
         $key = $this->user->key;
-        $challenge = '';
-        $result = openssl_public_encrypt($this->user->email, $challenge, $key);
-        if ($result === false){
-            return openssl_error_string();
+        $challenge = hash('sha256', $this->user->email . Yii::$app->security->generateRandomString());
+        $ciphered = '';
+
+        if (!openssl_public_encrypt($challenge, $ciphered, $key)) {
+            return null;
         }
-        else{
-            return base64_encode($challenge);
-        }
-        //TODO: DEBUG ONLY!
-        //return hash('sha256', $this->user->email);
+
+        return [$challenge, $ciphered];
     }
 
     /**

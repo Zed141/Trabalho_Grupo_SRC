@@ -91,7 +91,7 @@
     //Function to open the indexed database
     const openDatabase = (dbName, storeName, version) => {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, version+1);
+            const request = indexedDB.open(dbName, version + 1);
 
             request.onerror = (event) => {
                 reject('Database error: ' + event.target.errorCode);
@@ -122,7 +122,6 @@
                     const objectStore = transaction.objectStore(storeName);
 
                     const request = objectStore.put(key, keyType);
-
                     request.onsuccess = () => {
                         console.log('Key saved successfully');
                         db.close(); // Close the database connection when done
@@ -138,7 +137,6 @@
             .catch(error => {
                 console.error('Error getting database version:', error);
             });
-
     };
 
     const btn = document.getElementById('register-btn');
@@ -158,17 +156,17 @@
                 console.log("Private Key:", privateKeyPEM);
 
                 //Save PEMKeys to IndexedDB: //Public PEM Key + //Private PEM Key
-                let $email = document.getElementById('register-email').value;
-                saveKey(dbName, $email, publicKeyPEM, 'publicKeyPEM');
-                saveKey(dbName, $email, privateKeyPEM, 'privateKeyPEM')
-                return;
+                let email = document.getElementById('register-email').value;
+                saveKey(dbName, email, publicKeyPEM, 'publicKeyPEM');
+                saveKey(dbName, email, privateKeyPEM, 'privateKeyPEM')
+
                 $.ajax(url, {
                     method: 'POST',
                     dataType: 'json',
                     contentType: 'application/json',
                     data: JSON.stringify({
                         name: document.getElementById('register-name').value,
-                        email: $email,
+                        email: email,
                         key: publicKeyPEM
                     })
                 }).done((response) => {

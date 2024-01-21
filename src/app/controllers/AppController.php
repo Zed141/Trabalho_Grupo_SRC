@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Account;
+use app\orm\LoginToken;
 use app\orm\User;
 use Yii;
 use yii\filters\AccessControl;
@@ -20,14 +21,14 @@ final class AppController extends Controller {
     /**
      * {@inheritdoc}
      */
-    /*public function behaviors() {
+    public function behaviors() {
         return [
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*'],],
-                    ['actions' => ['profile', 'settings', 'logout'], 'allow' => true, 'roles' => ['@'],],
-                    ['actions' => ['login'], 'allow' => true, 'roles' => ['?'],],
+                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*']],
+                    ['actions' => ['profile', 'settings', 'logout'], 'allow' => true, 'roles' => ['@']],
+                    ['actions' => ['login', 'get-public-pem', 'bootstrap-login', 'confirm-login'], 'allow' => true, 'roles' => ['*']]
                 ],
             ],
             'verbs' => [
@@ -37,7 +38,7 @@ final class AppController extends Controller {
                 ],
             ],
         ];
-    }*/
+    }
 
     /**
      * {@inheritdoc}
@@ -85,8 +86,18 @@ final class AppController extends Controller {
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong user or credentials.')]);
         }
 
-        $challenge = $account->generateChallenge();
-        return $this->asJson(['ok' => true, 'challenge' => $challenge]);
+        [$challenge, $ciphered] = $account->generateChallenge();
+
+        $token = new LoginToken();
+        $token->user_id = $account->getId();
+        $token->created_at = date('Y-m-d H:i:s');
+        $token->expired = false;
+        $token->token = $challenge;
+        if (!$token->save(false)) {
+            return $this->asJson(['ok' => false, 'reason' => 'Internal Error.']);
+        }
+
+        return $this->asJson(['ok' => true, 'challenge' => base64_encode($ciphered)]);
     }
 
     /**
@@ -124,7 +135,7 @@ final class AppController extends Controller {
         return $this->asJson(['ok' => true]);
     }
 
-    public function actionGetPublicPEM(): Response{
+    public function actionGetPublicPem(): Response {
         $request = Yii::$app->request;
         $email = $request->post('email');
         $user = User::find()->where(['email' => $email])->one();
