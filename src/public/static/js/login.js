@@ -4,9 +4,26 @@
     const dbName = 'SRC-DATABASE';
     const storeName = 'UserStore';
 
-    const openDatabase = (dbName, storeName) => {
+    const getDBVersion = (dbName) => {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
+            const request = indexedDB.open(dbName);
+
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                const version = db.version;
+                db.close(); // Close the database connection
+                resolve(version);
+            };
+
+            request.onerror = (event) => {
+                reject('Database error: ' + event.target.errorCode);
+            };
+        });
+    };
+
+    const openDatabase = (dbName, storeName, version) => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, version);
             request.onerror = (event) => {
                 reject('Database error: ' + event.target.errorCode);
             };
@@ -26,7 +43,7 @@
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([storeName], 'readonly');
             const objectStore = transaction.objectStore(storeName);
-            const request = objectStore.get(key); // Fetches data by key
+            const request = objectStore.get(key,); // Fetches data by key
 
             request.onerror = (event) => {
                 reject('Error fetching data: ' + event.target.errorCode);
@@ -76,40 +93,43 @@
             }
 
             // Fetch Public Key from the Indexed DB
-            openDatabase(dbName, email)
-                .then(db => {
-                    fetchDataByKeyFromDB(db, email, "publicKeyPEM")
-                        .then(data => {
-                            return;
+            getDBVersion(dbName)
+                .then(version =>{
+                openDatabase(dbName, email, version)
+                    .then(db => {
+                        fetchDataByKeyFromDB(db, email, "publicKeyPEM")
+                            .then(data => {
+                                return;
 
-                            //TODO: REVER E REATIVAR
-                            console.log("data", data);
-                            publicKeyPEM = data;
-                            //In case the public key is missing from the Indexed DB has to be fetched from the Database
-                            console.log(publicKeyPEM);
-                            //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
-                            //TODO: CONFIRMAR!
-                            if (publicKeyPEM.length === 0) {
-                                $.ajax('/app/get-public-pem', {
-                                    method: 'POST',
-                                    dataType: 'json',
-                                    contentType: 'application/json',
-                                    data: JSON.stringify({
-                                        email: email,
-                                    })
-                                }).done((response) => {
-                                    if (response.ok) {
-                                        console.log(response, response.data);
-                                    }
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error while fetching data:', error);
-                        });
-                })
-                .catch(error => {
-                    console.error('Failed to open database:', error);
+                                //TODO: REVER E REATIVAR
+                                console.log("data", data);
+                                publicKeyPEM = data;
+                                //In case the public key is missing from the Indexed DB has to be fetched from the Database
+                                console.log(publicKeyPEM);
+                                //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
+                                //TODO: CONFIRMAR!
+                                if (publicKeyPEM.length === 0) {
+                                    $.ajax('/app/get-public-pem', {
+                                        method: 'POST',
+                                        dataType: 'json',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify({
+                                            email: email,
+                                        })
+                                    }).done((response) => {
+                                        if (response.ok) {
+                                            console.log(response, response.data);
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error while fetching data:', error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Failed to open database:', error);
+                    })
                 });
 
             //TODO: read from storage
