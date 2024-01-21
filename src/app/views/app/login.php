@@ -43,7 +43,7 @@ $this->registerJsFile('/static/js/login.js');
 
     <div class="form-footer">
         <button type="button" id="login-btn" class="btn btn-primary w-100"
-                data-stage1url="<?= Url::to(['/app/boostrap-login']) ?>"
+                data-stage1url="<?= Url::to(['/app/start-login']) ?>"
                 data-stage2url="<?= Url::to(['/app/confirm-login']) ?>"
         ><?= Yii::t('app', 'Sign in') ?></button>
     </div>
