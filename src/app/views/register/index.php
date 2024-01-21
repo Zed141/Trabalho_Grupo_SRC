@@ -38,7 +38,7 @@ $this->registerJsFile('/static/js/register.js');
 
         <div class="form-footer">
             <button type="button" id="register-btn" class="btn btn-primary w-100"
-                    data-url="<?= Url::to(['/register/store']) ?>" data-to="<?= Url::to(['/app/index']) ?>">
+                    data-url="<?= Url::to(['/register/store']) ?>">
                 <?= Yii::t('app', 'Create new account') ?>
             </button>
         </div>

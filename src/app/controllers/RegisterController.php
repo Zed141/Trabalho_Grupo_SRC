@@ -7,6 +7,7 @@ use app\orm\User;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
+use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\Response;
 
@@ -59,7 +60,6 @@ final class RegisterController extends Controller {
         }
 
         if (Account::findByEmail($email) !== null) {
-            //TODO Validar se queremos dar disclose dos emails que já existem
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '"Email" is already registered'), 'field' => 'register-name']);
         }
 
@@ -80,6 +80,6 @@ final class RegisterController extends Controller {
 
 
         Yii::$app->user->login(Account::factoryFromUser($user));
-        return $this->asJson(['ok' => true]);
+        return $this->asJson(['ok' => true, 'to' => Url::to(['/app/index'])]);
     }
 }

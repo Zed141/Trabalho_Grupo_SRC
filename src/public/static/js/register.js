@@ -143,7 +143,6 @@
     if (btn !== null) {
         btn.addEventListener('click', (e) => {
             const url = e.currentTarget.dataset.url;
-            const to = e.currentTarget.dataset.to;
             console.log("url: ", url);
             console.log("To: ", to);
 
@@ -171,13 +170,11 @@
                     })
                 }).done((response) => {
                     if (!response.ok) {
-                        //TODO: alert or something...
                         console.error(response.reason);
                         return;
                     }
 
-                    //TODO: fix/improve!
-                    window.location.href = to;
+                    window.location.href = response.to;
                 }).fail((jqXHR, textStatus, errorThrown) => {
                     console.error(textStatus, errorThrown);
                 });

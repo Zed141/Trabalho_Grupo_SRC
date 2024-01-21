@@ -46,7 +46,7 @@ final class AppController extends Controller {
     public function actions() {
         return [
             'error' => [
-                'class' => ErrorAction::class,
+                'class' => ErrorAction::class
             ]
         ];
     }

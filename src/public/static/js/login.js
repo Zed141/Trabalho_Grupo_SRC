@@ -2,7 +2,6 @@
 
     const db = null;
     const dbName = 'SRC-DATABASE';
-    const storeName = 'UserStore';
 
     const getDBVersion = (dbName) => {
         return new Promise((resolve, reject) => {
@@ -52,23 +51,6 @@
             request.onsuccess = (event) => {
                 resolve(event.target.result); // Resolves with the fetched data
             };
-        });
-    }
-
-
-    let btn = document.getElementById('search-key-btn');
-    if (btn !== null) {
-        btn.addEventListener('click', (e) => {
-            // //const saveKey = (dbName, storeName, key, keyType) => {
-            // const db = openDatabase(dbName, storeName).then(db => {
-            //     const transaction = db.transaction([storeName], 'read');
-            //     const objectStore = transaction.objectStore(storeName);
-            //
-            //     const key = objectStore.get("publicKeyPEM");
-            //     if(key )
-            //     document.getElementById('key-info').value = 'Valid Key Found';
-            // });
-            // //};
         });
     }
 
