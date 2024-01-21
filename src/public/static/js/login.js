@@ -4,23 +4,40 @@
     const dbName = 'SRC-DATABASE';
     const storeName = 'UserStore';
 
-    // const openDatabase = (dbName, storeName) => {
-    //     return new Promise((resolve, reject) => {
-    //         const request = indexedDB.open(dbName, 1);
-    //         request.onerror = (event) => {
-    //             reject('Database error: ' + event.target.errorCode);
-    //         };
-    //
-    //         request.onupgradeneeded = (event) => {
-    //             const db = event.target.result;
-    //             db.createObjectStore(storeName, {autoIncrement: true});
-    //         };
-    //
-    //         request.onsuccess = (event) => {
-    //             resolve(event.target.result);
-    //         };
-    //     });
-    // };
+    const openDatabase = (dbName, storeName) => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onerror = (event) => {
+                reject('Database error: ' + event.target.errorCode);
+            };
+
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                db.createObjectStore(storeName, {autoIncrement: true});
+            };
+
+            request.onsuccess = (event) => {
+                resolve(event.target.result);
+            };
+        });
+    };
+
+    function fetchDataByKeyFromDB(db, storeName, key) {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([storeName], 'readonly');
+            const objectStore = transaction.objectStore(storeName);
+            const request = objectStore.get(key); // Fetches data by key
+
+            request.onerror = (event) => {
+                reject('Error fetching data: ' + event.target.errorCode);
+            };
+
+            request.onsuccess = (event) => {
+                resolve(event.target.result); // Resolves with the fetched data
+            };
+        });
+    }
+
 
     let btn = document.getElementById('search-key-btn');
     if (btn !== null) {
@@ -41,21 +58,61 @@
     btn = document.getElementById('login-btn');
     if (btn !== null) {
         btn.addEventListener('click', (e) => {
+
+            let publicKeyPEM = '';
             const email = document.getElementById('login-email').value;
             if (email === undefined || email === null || email.length <= 0) {
                 return;
             }
 
-            const loginStage1Url = e.currentTarget.dataset.stateurl1;
+            const loginStage1Url = "e.currentTarget.dataset.stateurl2;";
             const loginStage2Url = e.currentTarget.dataset.stateurl2;
 
-            if (loginStage1Url === undefined || loginStage1Url === null || loginStage1Url.length <= 0 ||
+            //TODO validar se este if é necessário porque não estava a perceber e não avançava
+           /* if (loginStage1Url === undefined || loginStage1Url === null || loginStage1Url.length <= 0 ||
                 loginStage2Url === undefined || loginStage2Url === null || loginStage2Url.length <= 0) {
                 return;
+            }*/
+
+            // Fetch Public Key from the Indexed DB
+            openDatabase(dbName, storeName)
+                .then(db => {
+                    fetchDataByKeyFromDB(db, storeName, "publicKeyPEM")
+                        .then(data => {
+                            publicKeyPEM = data;
+                        })
+                        .catch(error => {
+                            console.error('Error while fetching data:', error);
+                        });
+                })
+                .catch(error => {
+                    console.error('Failed to open database:', error);
+                });
+
+            //In case the public key is missing from the Indexed DB has to be fetched from the Database
+
+            //TODO Não consigo fazer o pedido à DB (adicionei uma action no app controller)
+            if (publicKeyPEM.length === 0){
+                $.ajax('/app/getPublicPEM',{
+                    method: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        email: email,
+                    })
+                }).done((response) => {
+                        if (response.ok){
+                            console.log(response, response.data);
+                        }
+                    }
+
+                )
             }
 
+
+
             //TODO: read from storage
-            const publicKeyPEM = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuLupstRTwG/UTuil9ukY\nXjVgD5DFH7scm2y7UVWBZDVlgYeSo7WetgSdgD9a85/GZMVkW6+qp7FgnqJQyCfj\nhkqCOQ/UqfAMIs0URjtq4bMKufFgemPE/c5UKbu/7MkZevbeJ7FPtcVWKdZ7Op8n\nukonh0iZg081ea0pQHmDjGS9afJTK3qojIAXDkqcaWM4AKw43kKe+N8pgPzsC4Nb\nZlnuHXhPOgYxrNqyDVSHRFLUWKm/Br0o4ccVIy2davOUNJxPQ7imYzf+fN2pkkDn\nshZjPrUM6RuJLGetpEISPDF+RoG17YLVCdo221ZMK/SMf1LcYcuItSbh2giah0cZ\ntiqUL26gFN67UwPb2r+hHQVLc5fXUy6Zgcn4IMY7hcF2A4aZ10wW8e5M/kwRCdza\ne101eh84OrgPZbzd+QRti8/5BSF/z8FxNS9FtmLPA+1bocUkPYc2rHEB97OuJh7e\nplGdHvwmBpwL8EVALd2842/Dd6WDnoD5QV9D1wFdVmLZEZqoRLeF4F8xpUSXsMp2\n3XGXh9F00ycKhKhad1jbDRphEeyn5hLL2u8RhaP2I3xEBhUZkm6AzVEjuvZ/oByP\nute5+yA+5d+RIPJ86gxUWwcaEsgbcMFvAaNbhNa6mGZ27XPN01UZHCjE5nz+XFqi\nO7RQcPc/TvDwPc3a1cc7pR8CAwEAAQ==";
+            //const publicKeyPEM = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuLupstRTwG/UTuil9ukY\nXjVgD5DFH7scm2y7UVWBZDVlgYeSo7WetgSdgD9a85/GZMVkW6+qp7FgnqJQyCfj\nhkqCOQ/UqfAMIs0URjtq4bMKufFgemPE/c5UKbu/7MkZevbeJ7FPtcVWKdZ7Op8n\nukonh0iZg081ea0pQHmDjGS9afJTK3qojIAXDkqcaWM4AKw43kKe+N8pgPzsC4Nb\nZlnuHXhPOgYxrNqyDVSHRFLUWKm/Br0o4ccVIy2davOUNJxPQ7imYzf+fN2pkkDn\nshZjPrUM6RuJLGetpEISPDF+RoG17YLVCdo221ZMK/SMf1LcYcuItSbh2giah0cZ\ntiqUL26gFN67UwPb2r+hHQVLc5fXUy6Zgcn4IMY7hcF2A4aZ10wW8e5M/kwRCdza\ne101eh84OrgPZbzd+QRti8/5BSF/z8FxNS9FtmLPA+1bocUkPYc2rHEB97OuJh7e\nplGdHvwmBpwL8EVALd2842/Dd6WDnoD5QV9D1wFdVmLZEZqoRLeF4F8xpUSXsMp2\n3XGXh9F00ycKhKhad1jbDRphEeyn5hLL2u8RhaP2I3xEBhUZkm6AzVEjuvZ/oByP\nute5+yA+5d+RIPJ86gxUWwcaEsgbcMFvAaNbhNa6mGZ27XPN01UZHCjE5nz+XFqi\nO7RQcPc/TvDwPc3a1cc7pR8CAwEAAQ==";
             $.ajax(loginStage1Url, {
                 method: 'POST',
                 dataType: 'json',

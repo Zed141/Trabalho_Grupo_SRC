@@ -57,6 +57,10 @@ final class RegisterController extends Controller {
         if (empty($email)) {
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '"Email" is a mandatory field'), 'field' => 'register-name']);
         }
+        elseif (Account::findByEmail($email)!==null){
+            //TODO Validar se queremos dar disclose dos emails que já existem
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', '"Email" is already registered'), 'field' => 'register-name']);
+        }
 
         $key = $request->post('key');
         if (empty($key)) {
@@ -68,10 +72,11 @@ final class RegisterController extends Controller {
         $user->name = $name;
         $user->email = $email;
         $user->key = $key;
-        $user->last_login = date('Y-m-d H:i:s');
+        //$user->last_login = date('Y-m-d H:i:s');
         if (!$user->save(false)) {
             return $this->asJson(['ok' => false, 'reason' => implode(' ', $user->getErrorSummary(true))]);
         }
+
 
         Yii::$app->user->login(Account::factoryFromUser($user));
         return $this->asJson(['ok' => true]);

@@ -32,4 +32,6 @@ final class User extends ActiveRecord {
     public function getOwnedVaults(): ActiveQuery {
         return $this->hasMany(Vault::class, ['owner_id' => 'id']);
     }
+
+
 }

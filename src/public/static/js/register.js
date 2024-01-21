@@ -104,7 +104,10 @@
         btn.addEventListener('click', (e) => {
             const url = e.currentTarget.dataset.url;
             const to = e.currentTarget.dataset.to;
+            console.log("url: ", url);
+            console.log("To: ", to);
 
+            //TODO validar se a geração do par de chaves não deveria ser só depois de validar se é possível criar a conta
             generateRSAKeyPair().then(kPair => {
                 const publicKeyPEM = kPair.publicKeyPEM;
                 const privateKeyPEM = kPair.privateKeyPEM;

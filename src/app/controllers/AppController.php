@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Account;
+use app\orm\User;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -121,6 +122,17 @@ final class AppController extends Controller {
 
         Yii::$app->user->login($account);
         return $this->asJson(['ok' => true]);
+    }
+
+    public function getPublicPEM() {
+        $request = Yii::$app->request;
+        $email = $request->post('email');
+        $user = User::find()->where(['email' => $email])->one();
+        if ($user) {
+            $key = $user->key;
+        } else {
+            return null;
+        }
     }
 
     /**
