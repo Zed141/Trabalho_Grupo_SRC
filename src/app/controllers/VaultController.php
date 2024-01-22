@@ -8,7 +8,9 @@ use app\orm\Vault;
 use app\forms\Vault as Form;
 use app\orm\VaultAccess;
 use Exception;
+use phpseclib3\Crypt\AES;
 use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\Random;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -77,6 +79,7 @@ final class VaultController extends Controller {
         $request = Yii::$app->request;
         $description = $request->post('description');
         $data = $request->post('data');
+
         $username = $request->post('username');
         $url = $request->post('url');
         $notes = $request->post('notes');
@@ -89,16 +92,28 @@ final class VaultController extends Controller {
         $user = Yii::$app->user->identity->getUser();
         $transaction = Yii::$app->getDb()->beginTransaction();
         try {
-            $secret = null;
+            //1: Dados do user (password) cifrados com AES, modo GCM
+            //2: Chave AES  cifrada com chave pública do user
+            //3: Nonce cifrado com chave pública do user
 
-//            $encrypted = null;
-//            //TODO: FIX ENCRYPTION!
-//            if (!openssl_public_encrypt(Yii::$app->security->generateRandomString(), $encrypted, $user->key)) {
-//                $transaction->rollBack();
-//                //TDO:...
-//            }
-//            //TODO: subject to timing attacks
-//            $secret = base64_encode($encrypted);
+            $key = $user->key;
+            $aesSecret = Yii::$app->security->generateRandomString(16);
+            $nonce = Random::string(16);
+
+            $loadedKey = PublicKeyLoader::load($key);
+            $cipheredAESSecret = $loadedKey->withHash('sha256')
+                ->withMGFHash('sha256')
+                ->encrypt($aesSecret);
+
+            $cipheredNonce = $loadedKey->withHash('sha256')
+                ->withMGFHash('sha256')
+                ->encrypt($nonce);
+
+            $vaultAES = new AES('gcm');
+            $vaultAES->setNonce($nonce);
+
+            $vaultAES->setKey($aesSecret);
+            $vaultData = $vaultAES->encrypt($data);
 
             $vault = new Vault();
             $vault->owner_id = $user->id;
@@ -106,7 +121,7 @@ final class VaultController extends Controller {
             $vault->username = $username ? trim($username) : null;
             $vault->url = $url ? trim($url) : null;
             $vault->notes = $notes ? trim($notes) : null;
-            $vault->data = '';
+            $vault->data = base64_encode($vaultData);
 
             if (!$vault->save(false)) {
                 $transaction->rollBack();
@@ -116,7 +131,8 @@ final class VaultController extends Controller {
             $access = new VaultAccess();
             $access->user_id = $user->id;
             $access->vault_id = $vault->id;
-            $access->secret = ''; //$secret;
+            $access->secret = base64_encode($cipheredAESSecret);
+            $access->nonce = base64_encode($cipheredNonce);
 
             if (!$access->save(false)) {
                 $transaction->rollBack();
@@ -126,7 +142,6 @@ final class VaultController extends Controller {
             $transaction->commit();
             return $this->asJson(['ok' => true]);
         } catch (Exception $ex) {
-            //TODO: ...
             $transaction->rollBack();
             return $this->asJson(['ok' => false, 'reason' => $ex->getMessage()]);
         }

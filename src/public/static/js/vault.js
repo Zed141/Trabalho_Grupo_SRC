@@ -115,7 +115,7 @@
                 }
 
                 //NOTE: just refresh, could be improved
-                window.local.reload();
+                window.location.reload();
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.error(textStatus, errorThrown);
             });

@@ -15,6 +15,7 @@ use yii\db\ActiveRecord;
  * @property int            $vault_id PK
  * @property string         $secret   Encoded and encrypted secret, used when accessing a vault's data
  * @property string|null    $nonce    Reserved for future use; may need to be "time based"
+ * @property string|null    $iv
  *
  * @property \app\orm\User  $user
  * @property \app\orm\Vault $vault

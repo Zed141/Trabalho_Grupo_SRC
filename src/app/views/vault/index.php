@@ -22,9 +22,7 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
 ?>
 <div class="card">
     <?= GridView::widget([
-        //'pageSize' => $pageSize,
         'dataProvider' => $provider,
-        //'filterModel' => $filter,
         'columns' => [
             'description',
             'username',
@@ -36,13 +34,6 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
                     return Html::a('Edit', '#', ['data-id' => $model['id'], 'class' => 'edit-btn']);
                 }
             ]
-            //TODO: links, formatting, etc.
-            //[
-            //'attribute' => '',
-            //'content' => function ($model) {
-            //},
-            //'filterInputOptions' => ['class' => 'form-control form-control-sm', 'id' => null]
-            //]
         ]
     ]);
     ?>
