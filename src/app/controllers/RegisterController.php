@@ -34,6 +34,8 @@ final class RegisterController extends Controller {
     }
 
     /**
+     * Provides a registration screen/UI, where users can provide an email and generate an RSA key pair.
+     *
      * @return string
      */
     public function actionIndex(): string {
@@ -42,7 +44,7 @@ final class RegisterController extends Controller {
     }
 
     /**
-     * Saves user's details and public key.
+     * Saves user's details and public key information, and automatically logs in the user.
      * Automatically authenticates new user.
      *
      * @return \yii\web\Response
@@ -77,7 +79,6 @@ final class RegisterController extends Controller {
         if (!$user->save(false)) {
             return $this->asJson(['ok' => false, 'reason' => implode(' ', $user->getErrorSummary(true))]);
         }
-
 
         Yii::$app->user->login(Account::factoryFromUser($user));
         return $this->asJson(['ok' => true, 'to' => Url::to(['/app/index'])]);

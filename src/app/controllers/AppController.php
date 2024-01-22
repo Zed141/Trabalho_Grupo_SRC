@@ -7,7 +7,7 @@ use app\orm\LoginToken;
 use app\orm\User;
 use Yii;
 use yii\filters\AccessControl;
-use yii\filters\VerbFilter;
+use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
@@ -26,17 +26,11 @@ final class AppController extends Controller {
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*']],
-                    ['actions' => ['profile', 'settings', 'logout'], 'allow' => true, 'roles' => ['@']],
+                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true],
+                    ['actions' => ['profile', 'settings', 'logout', 'index'], 'allow' => true, 'roles' => ['@']],
                     ['actions' => ['login', 'get-public-pem', 'start-login', 'confirm-login'], 'allow' => true]
                 ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
+            ]
         ];
     }
 
@@ -59,6 +53,8 @@ final class AppController extends Controller {
     }
 
     /**
+     * Shows login page with authentication UI.
+     *
      * @return string|\yii\web\Response
      */
     public function actionLogin(): Response|string {
@@ -71,6 +67,8 @@ final class AppController extends Controller {
     }
 
     /**
+     * Handles first stage of the login process, creating the required challenge and saving login token's details.
+     *
      * @return \yii\web\Response
      * @throws \Exception
      */
@@ -86,21 +84,24 @@ final class AppController extends Controller {
             return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong user or credentials.')]);
         }
 
-        [$challenge, $ciphered] = $account->generateChallenge();
+        [$challengeToken, $challengeData] = $account->generateChallenge();
 
         $token = new LoginToken();
         $token->user_id = $account->getId();
         $token->created_at = date('Y-m-d H:i:s');
         $token->expired = false;
-        $token->token = $challenge;
+        $token->token = $challengeToken;
         if (!$token->save(false)) {
             return $this->asJson(['ok' => false, 'reason' => 'Internal Error.']);
         }
 
-        return $this->asJson(['ok' => true, 'challenge' => base64_encode($ciphered)]);
+        return $this->asJson(['ok' => true, 'challenge' => $challengeData]);
     }
 
     /**
+     * Validates the token sent by the user. If the token is valid, the user has the private key and can login into
+     * the system.
+     *
      * @return \yii\web\Response
      * @throws \Exception
      */
@@ -108,42 +109,45 @@ final class AppController extends Controller {
         $request = Yii::$app->request;
         $token = $request->post('token');
         if (empty($token)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed, missing token.')]);
         }
 
         $email = $request->post('email');
         if (empty($email)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed, missing email.')]);
         }
 
         $account = Account::findByEmail($email);
         if (!$account) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed, account not found.')]);
         }
 
         if (!$account->isTokenValid($token)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed token is invalid.')]);
         }
 
         $user = $account->getUser();
         $user->last_login = date('Y-m-d H:i:s');
         if (!$user->save(false)) {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed.')]);
+            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Login failed, internal error.')]);
         }
 
         Yii::$app->user->login($account);
-        return $this->asJson(['ok' => true]);
+        return $this->asJson(['ok' => true, 'to' => Url::to(['/app/index'])]);
     }
 
     public function actionGetPublicPem(): Response {
+        //TODO: Validar necessidade
         $request = Yii::$app->request;
         $email = $request->post('email');
+
+        /** @var \app\orm\User $user */
         $user = User::find()->where(['email' => $email])->one();
         if ($user) {
             return $this->asJson(['ok' => true, 'publicKeyPEM' => $user->key]);
-        } else {
-            return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong Credentials.')]);
         }
+
+        return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong Credentials.')]);
     }
 
     /**

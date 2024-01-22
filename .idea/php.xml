@@ -99,6 +99,8 @@
       <path value="$PROJECT_DIR$/src/vendor/phpunit/php-invoker" />
       <path value="$PROJECT_DIR$/src/vendor/phpunit/php-text-template" />
       <path value="$PROJECT_DIR$/src/vendor/phpunit/php-timer" />
+      <path value="$PROJECT_DIR$/src/vendor/paragonie/constant_time_encoding" />
+      <path value="$PROJECT_DIR$/src/vendor/phpseclib/phpseclib" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3">

@@ -2,12 +2,14 @@
 
 use app\assets\AppAsset;
 use yii\helpers\Html;
+use yii\web\View;
 
 /** @var \yii\web\View $this */
 /** @var string $content */
 
 AppAsset::register($this);
 
+$this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
 $baseUrl = Yii::$app->urlManager->baseUrl;
 $this->beginPage();
 ?>

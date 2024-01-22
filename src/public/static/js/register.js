@@ -1,37 +1,29 @@
 (async () => {
 
-    const dbName = 'SRC-DATABASE';
-
     /**
      * Function to generate RSA Public and Private Key pair.
      * @returns {{publicKeyPEM: string, privateKeyPEM: string}}
      */
     async function generateRSAKeyPair() {
         try {
-            //Algorithm details
             const algorithm = {
-                name: "RSA-OAEP", //Algorithm used
-                modulusLength: 4096, // Key size = 4096
-                publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // Exponent for the RSA
-                hash: "SHA-256", //Hash used
+                name: "RSA-OAEP",
+                modulusLength: 4096,
+                publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+                hash: "SHA-256"
             };
 
-            // Creating the Key Pair with the algorithm details
             const keyPair = await window.crypto.subtle.generateKey(
                 algorithm,
                 true, // True - Key can be extracted
                 ["encrypt", "decrypt"] // Key usages
             );
 
-            // Export the public key in SPKI format
             const spki = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
             const publicKeyPEM = arrayBufferToPEM(spki, 'PUBLIC KEY');
-
-            // Export the private key in PKCS8 format
             const pkcs8 = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
             const privateKeyPEM = arrayBufferToPEM(pkcs8, 'PRIVATE KEY');
 
-            //Return Key Pair
             return {publicKeyPEM, privateKeyPEM, keyPair};
         } catch (error) {
             console.error("Key generation failed:", error);
@@ -65,47 +57,6 @@
         return window.btoa(binary);
     };
 
-    //Function to get DB version needed to upgrade DB schema
-    const getDBVersion = (dbName) => {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName);
-
-            request.onsuccess = (event) => {
-                const db = event.target.result;
-                const version = db.version;
-                db.close(); // Close the database connection
-                resolve(version);
-            };
-
-            request.onerror = (event) => {
-                reject('Database error: ' + event.target.errorCode);
-            };
-        });
-    };
-
-    //Function to open the indexed database
-    const openDatabase = (dbName, storeName, version) => {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, version + 1);
-
-            request.onerror = (event) => {
-                reject('Database error: ' + event.target.errorCode);
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(storeName)) {
-                    db.createObjectStore(storeName);
-                }
-            };
-
-            request.onsuccess = (event) => {
-                resolve(event.target.result);
-            };
-        });
-    };
-
-    //Function to store de key pair
     const saveKey = (dbName, storeName, key, keyType) => {
         let dbVersion = 0;
         getDBVersion(dbName)
@@ -143,14 +94,10 @@
                 const publicKeyPEM = keys.publicKeyPEM;
                 const privateKeyPEM = keys.privateKeyPEM;
 
-                console.log("Public Key:", publicKeyPEM);
-                console.log("Private Key:", privateKeyPEM);
-
-                //Save PEMKeys to IndexedDB: //Public PEM Key + //Private PEM Key
                 let email = document.getElementById('register-email').value;
-                saveKey(dbName, email, publicKeyPEM, 'publicKeyPEM');
-                saveKey(dbName, email, privateKeyPEM, 'privateKeyPEM');
-                saveKey(dbName, email, keys.keyPair, 'kPair');
+                saveKey(LocalDBName, email, publicKeyPEM, 'publicKeyPEM');
+                saveKey(LocalDBName, email, privateKeyPEM, 'privateKeyPEM');
+                saveKey(LocalDBName, email, keys.keyPair, 'kPair');
 
                 $.ajax(url, {
                     method: 'POST',

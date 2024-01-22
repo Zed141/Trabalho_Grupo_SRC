@@ -5,6 +5,8 @@ namespace app\models;
 use app\orm\LoginToken;
 use app\orm\User;
 use Exception;
+use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\NotSupportedException;
@@ -36,6 +38,7 @@ final class Account extends BaseObject implements IdentityInterface {
 
         $account = new self();
         $account->user = $user;
+        return $account;
     }
 
     /**
@@ -108,14 +111,19 @@ final class Account extends BaseObject implements IdentityInterface {
         }
 
         $key = $this->user->key;
-        $challenge = hash('sha256', $this->user->email . Yii::$app->security->generateRandomString());
-        $ciphered = '';
+        $challenge = strtoupper(hash('sha256', $this->user->email . Yii::$app->security->generateRandomString()));
+//        $ciphered = '';
+//
+//        if (!openssl_public_encrypt($challenge, $ciphered, $key, OPENSSL_PKCS1_OAEP_PADDING)) {
+//            return null;
+//        }
 
-        if (!openssl_public_encrypt($challenge, $ciphered, $key, OPENSSL_PKCS1_OAEP_PADDING)) {
-            return null;
-        }
+        $loadedKey = PublicKeyLoader::load($key);
+        $ciphered = $loadedKey->withHash('sha256')
+            ->withMGFHash('sha256')
+            ->encrypt($challenge);
 
-        return [$challenge, $ciphered];
+        return [$challenge, base64_encode($ciphered)];
     }
 
     /**

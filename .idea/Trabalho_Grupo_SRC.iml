@@ -9,6 +9,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/common/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/frontend/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/spec" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/behat/gherkin" />
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/bower-asset/bootstrap" />
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/bower-asset/inputmask" />
@@ -96,6 +98,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/yiisoft/yii2-faker" />
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/yiisoft/yii2-gii" />
       <excludeFolder url="file://$MODULE_DIR$/src/vendor/yiisoft/yii2-symfonymailer" />
+      <excludeFolder url="file://$MODULE_DIR$/src/vendor/phpseclib/phpseclib" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

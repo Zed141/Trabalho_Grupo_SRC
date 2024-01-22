@@ -1,69 +1,74 @@
 {
-    "name": "mcif/src2024",
-    "description": "Projeto SRC, MCIF",
-    "keywords": ["cibersecurity", "password manager", "multi-user"],
-    "homepage": "https://github.com/Zed141/Trabalho_Grupo_SRC",
-    "type": "project",
-    "license": "proprietary",
-    "support": {
-        "source": "https://github.com/Zed141/Trabalho_Grupo_SRC"
+  "name": "mcif/src2024",
+  "description": "Projeto SRC, MCIF",
+  "keywords": [
+    "cibersecurity",
+    "password manager",
+    "multi-user"
+  ],
+  "homepage": "https://github.com/Zed141/Trabalho_Grupo_SRC",
+  "type": "project",
+  "license": "proprietary",
+  "support": {
+    "source": "https://github.com/Zed141/Trabalho_Grupo_SRC"
+  },
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=8.3.0",
+    "yiisoft/yii2": "~2.0.45",
+    "yiisoft/yii2-bootstrap5": "~2.0.2",
+    "yiisoft/yii2-symfonymailer": "~2.0.3",
+    "ext-openssl": "*",
+    "phpseclib/phpseclib": "~3.0"
+  },
+  "require-dev": {
+    "yiisoft/yii2-debug": "~2.1.0",
+    "yiisoft/yii2-gii": "~2.2.0",
+    "yiisoft/yii2-faker": "~2.0.0",
+    "phpunit/phpunit": "~9.5.0",
+    "codeception/codeception": "^5.0.0 || ^4.0",
+    "codeception/lib-innerbrowser": "^4.0 || ^3.0 || ^1.1",
+    "codeception/module-asserts": "^3.0 || ^1.1",
+    "codeception/module-yii2": "^1.1",
+    "codeception/module-filesystem": "^3.0 || ^2.0 || ^1.1",
+    "codeception/verify": "^3.0 || ^2.2",
+    "symfony/browser-kit": "^6.0 || >=2.7 <=4.2.4"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "tests\\app\\": [
+        "tests/app"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true
     },
-    "minimum-stability": "dev",
-    "require": {
-        "php": ">=8.3.0",
-        "yiisoft/yii2": "~2.0.45",
-        "yiisoft/yii2-bootstrap5": "~2.0.2",
-        "yiisoft/yii2-symfonymailer": "~2.0.3",
-      "ext-openssl": "*",
-        "ext-sodium": "*",
-        "paragonie/halite": "^5"
-    },
-    "require-dev": {
-        "yiisoft/yii2-debug": "~2.1.0",
-        "yiisoft/yii2-gii": "~2.2.0",
-        "yiisoft/yii2-faker": "~2.0.0",
-        "phpunit/phpunit": "~9.5.0",
-        "codeception/codeception": "^5.0.0 || ^4.0",
-        "codeception/lib-innerbrowser": "^4.0 || ^3.0 || ^1.1",
-        "codeception/module-asserts": "^3.0 || ^1.1",
-        "codeception/module-yii2": "^1.1",
-        "codeception/module-filesystem": "^3.0 || ^2.0 || ^1.1",
-        "codeception/verify": "^3.0 || ^2.2",
-        "symfony/browser-kit": "^6.0 || >=2.7 <=4.2.4"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "tests\\app\\": ["tests/app"]
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "yiisoft/yii2-composer" : true
-        },
-        "process-timeout": 1800,
-        "fxp-asset": {
-            "enabled": false
-        }
-    },
-    "extra": {
-        "yii\\composer\\Installer::postCreateProject": {
-            "setPermission": [
-                {
-                    "app/runtime": "0777",
-                    "console/yii": "0755"
-                }
-            ]
-        },
-        "yii\\composer\\Installer::postInstall": {
-            "generateCookieValidationKey": [
-                "app/config/main.php"
-            ]
-        }
-    },
-    "repositories": [
+    "process-timeout": 1800,
+    "fxp-asset": {
+      "enabled": false
+    }
+  },
+  "extra": {
+    "yii\\composer\\Installer::postCreateProject": {
+      "setPermission": [
         {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
+          "app/runtime": "0777",
+          "console/yii": "0755"
         }
-    ]
+      ]
+    },
+    "yii\\composer\\Installer::postInstall": {
+      "generateCookieValidationKey": [
+        "app/config/main.php"
+      ]
+    }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
 }

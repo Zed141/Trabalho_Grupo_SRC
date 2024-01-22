@@ -4,6 +4,7 @@ use app\assets\AppAsset;
 use app\helpers\SvgIconIndex;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\web\View;
 
 /** @var \yii\web\View $this */
 /** @var string $content */
@@ -13,7 +14,10 @@ AppAsset::register($this);
 $baseUrl = Yii::$app->urlManager->baseUrl;
 $subtitle = $this->params['subtitle'] ?? null;
 $buttons = $this->params['buttons'] ?? [];
+$this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
 
+/** @var \app\orm\User $user */
+$user = !Yii::$app->user->isGuest ? Yii::$app->user->identity->getUser() : null;
 $this->beginPage();
 ?>
     <!doctype html>
@@ -53,8 +57,8 @@ $this->beginPage();
                             <span class="avatar avatar-sm"
                                   style="background-image: url(/static/images/avatar-1577909_640.png)"></span>
                             <div class="d-none d-xl-block ps-2">
-                                <div>&lt;user name&gt;</div>
-                                <div class="mt-1 small text-muted">smaller example text</div>
+                                <div><?= $user?->name ?></div>
+                                <div class="mt-1 small text-muted"><?= $user?->email ?></div>
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

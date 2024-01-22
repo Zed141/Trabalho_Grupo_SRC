@@ -2,6 +2,7 @@
 
 use app\assets\AppAsset;
 use yii\helpers\Html;
+use yii\web\View;
 
 /** @var \yii\web\View $this */
 /** @var string $content */
@@ -11,6 +12,8 @@ AppAsset::register($this);
 $baseUrl = Yii::$app->urlManager->baseUrl;
 $subtitle = $this->params['subtitle'] ?? null;
 $buttons = $this->params['buttons'] ?? [];
+
+$this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
 
 $this->beginPage();
 ?>
