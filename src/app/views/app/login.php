@@ -1,13 +1,12 @@
 <?php
 
-use app\helpers\SvgIconIndex;
 use yii\helpers\Url;
 
 /** @var yii\web\View $this */
 
 $this->title = Yii::t('app', 'Login');
 $baseUrl = Yii::$app->urlManager->baseUrl;
-$this->registerJsFile('/static/js/login.js');
+$this->registerJsFile('/static/js/login.js', ['depends' => '\app\assets\AppAsset']);
 ?>
 <div class="text-center mb-4">
     <a href="<?= $baseUrl ?>/" class="navbar-brand navbar-brand-autodark">
@@ -22,24 +21,6 @@ $this->registerJsFile('/static/js/login.js');
         <input id="login-email" type="email" class="form-control" autocomplete="off"
                placeholder="<?= Yii::t('app', 'your@email.com') ?>">
     </div>
-
-    <!-- <div class="mb-2">
-        <label class="form-label" for="key-info">
-            <?= Yii::t('app', 'RSA Key') ?>
-            <span class="form-label-description"><a href="<?= Url::to(['/register/index']) ?>">No key found?</a></span>
-        </label>
-
-        <div class="input-group input-group-flat">
-            <input id="key-info" readonly type="text" class="form-control" placeholder="" autocomplete="off">
-            <span class="input-group-text">
-                  <a id="search-key-btn" href="#" class="link-secondary" data-bs-toggle="tooltip"
-                     aria-label="<?= Yii::t('app', 'Search key again') ?>"
-                     data-bs-original-title="<?= Yii::t('app', 'Search key again') ?>">
-                      <?= SvgIconIndex::icon(SvgIconIndex::KEY) ?>
-                  </a>
-                </span>
-        </div>
-    </div> -->
 
     <div class="form-footer">
         <button type="button" id="login-btn" class="btn btn-primary w-100"

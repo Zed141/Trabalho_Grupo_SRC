@@ -5,15 +5,14 @@ use yii\helpers\Url;
 /** @var \yii\web\View $this */
 
 $baseUrl = Yii::$app->urlManager->baseUrl;
-$this->registerJsFile('/static/js/register.js');
-
+$this->registerJsFile('/static/js/register.js', ['depends' => '\app\assets\AppAsset']);
 ?>
 <div class="text-center mb-4">
     <a href="<?= $baseUrl ?>/" class="navbar-brand navbar-brand-autodark">
         <img src="/static/images/logo2-transp.png" height="36" alt="Ciphered Lock">
     </a>
 </div>
-<form class="card card-md" action="#" method="post" autocomplete="off" novalidate>
+<form class="card card-md" action="#" method="post" autocomplete="off" novalidate id="registration-form">
     <div class="card-body">
         <h2 class="card-title text-center mb-4"><?= Yii::t('app', 'Create new account') ?></h2>
         <div class="mb-3">
