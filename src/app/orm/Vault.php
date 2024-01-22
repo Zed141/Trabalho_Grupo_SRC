@@ -14,6 +14,8 @@ use yii\db\ActiveRecord;
  * @property string        $data        Encrypted and encoded data safe in this vault
  * @property string|null   $url         Optional URL where the data is used
  * @property string|null   $notes       Optional notes that add context or other visible/public info about this vault
+ *@property string|null   $nonce    nonce encrypted with Public RSA and encoded in base64
+ * @property string|null $secret    $secret encrypted with Public RSA and encoded in base64
  *
  * @property \app\orm\User $owner
  */
@@ -37,7 +39,9 @@ final class Vault extends ActiveRecord {
             'username' => Yii::t('app', 'Username'),
             'data' => Yii::t('app', 'Password'),
             'url' => Yii::t('app', 'URL'),
-            'notes' => Yii::t('app', 'Adicional information'),
+            'notes' => Yii::t('app', 'Additional information'),
+            'nonce' => Yii::t('app', 'Nonce'),
+            'secret' => Yii::t('app', 'Secret'),
         ];
     }
 

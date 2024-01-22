@@ -36,11 +36,28 @@
         if (vaultDetailsModalElem === null) {
             return;
         }
-        const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
+         const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
 
         btn.addEventListener('click', (e) => {
+
+            $.ajax("get-vault-secret", {
+                method: 'GET',
+                dataType: 'json',
+                contentType: 'application/json',
+                }).done((response) => {
+                    if (!response.ok) {
+                        console.error(response.reason);
+                        return;
+                    }
+                    console.log(response);
+                    debugger;
+                    }
+
+            )
+
             const id = e.currentTarget.dataset.id;
             const detailsUrl = `${url}?id=${id}`;
+            console.log("detailsUrl", detailsUrl);
             $.ajax(detailsUrl, {
                 method: 'GET',
                 dataType: 'json',
@@ -55,6 +72,8 @@
                 document.getElementById('vault-username').value = response.username;
                 document.getElementById('vault-url').value = response.url;
                 document.getElementById('vault-notes').value = response.notes;
+
+
 
                 const saveBtn = document.getElementById("save-vault-btn");
                 saveBtn.dataset.action = "update";

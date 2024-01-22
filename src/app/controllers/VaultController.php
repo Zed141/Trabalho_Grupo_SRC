@@ -48,6 +48,25 @@ final class VaultController extends Controller {
      *
      * @return \yii\web\Response
      */
+    public function actionGetVaultSecret(?int $id = null): Response{
+        if (!$id) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
+        }
+
+        /** @var \app\orm\User  $user */
+        $user = Yii::$app->user->identity;
+
+        /** @var \app\orm\Vault $vaultAccess */
+        $vaultAccess = VaultAccess::find()->where(['vault_id' => $id, 'user_id' => $user->id])->one();
+        if (!$vaultAccess) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
+        }
+
+        return $this->asJson(['ok' => true,
+            'nonce' => $vaultAccess->nonce,
+            'secret' => $vaultAccess->secret]);
+
+    }
     public function actionDetails(?int $id = null): Response {
         if (!$id) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
@@ -65,7 +84,7 @@ final class VaultController extends Controller {
         return $this->asJson(['ok' => true,
             'id' => $vault->id,
             'description' => $vault->description,
-            //'data' => $vault->data,
+            'data' => $vault->data,
             'username' => $vault->username,
             'url' => $vault->url,
             'notes' => $vault->notes
