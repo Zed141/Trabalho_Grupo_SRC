@@ -26,9 +26,9 @@ final class AppController extends Controller {
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true],
+                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*']],
                     ['actions' => ['profile', 'settings', 'logout', 'index'], 'allow' => true, 'roles' => ['@']],
-                    ['actions' => ['login', 'get-public-pem', 'start-login', 'confirm-login'], 'allow' => true]
+                    ['actions' => ['login', 'get-public-pem', 'start-login', 'confirm-login'], 'allow' => true, 'roles' => ['?']]
                 ],
             ]
         ];
@@ -133,6 +133,7 @@ final class AppController extends Controller {
         }
 
         Yii::$app->user->login($account);
+        Yii::$app->session->set('token', $token);
         return $this->asJson(['ok' => true, 'to' => Url::to(['/app/index'])]);
     }
 
