@@ -13,7 +13,7 @@ $this->params = [
     'buttons' => [
         (object)[
             'type' => 'group', 'url' => '#', 'labelSm' => 'Create Vault', 'label' => 'Create Vault', 'actionBtn' => true,
-            'data' => ['data-bs-toggle="modal"', 'data-bs-target="#modal-add-vault"']
+            'id' => 'add-vault-btn', 'smId' => 'add-vault-smbtn'
         ]
     ]
 ];
@@ -31,8 +31,9 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
             'url',
             [
                 'label' => '',
+                'headerOptions' => ['style' => 'width: 5rem;'],
                 'content' => function ($model) {
-                    return Html::a('Edit', '#', ['data-id' => $model['id']]);
+                    return Html::a('Edit', '#', ['data-id' => $model['id'], 'class' => 'edit-btn']);
                 }
             ]
             //TODO: links, formatting, etc.
@@ -105,7 +106,7 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
                 <button type="button" class="btn btn-link link-secondary"
                         data-bs-dismiss="modal"><?= Yii::t('app', 'Cancel') ?></button>
 
-                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal" id="btn-add-vault"
+                <button type="button" class="btn btn-success ms-auto" data-bs-dismiss="modal" id="save-vault-btn"
                         data-createurl="<?= Url::to(['/vault/create']) ?>"
                         data-updateurl="<?= Url::to(['/vault/update']) ?>"
                         data-id="">

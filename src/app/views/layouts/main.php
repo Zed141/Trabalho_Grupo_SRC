@@ -93,17 +93,21 @@ $this->beginPage();
                                             case 'single':
                                                 $tag = '<a href="' . Url::to($button->url) . '">' . $button->label . '</a>';
                                                 if ($button->actionBtn) {
-                                                    $tag = '<button type="button" class="btn"' . (!empty($button->url) ? 'data-action="' . $button->url . '"' : '') . '>' . $button->label . '</button>';
+                                                    $tag = '<button type="button" class="btn" id="' . $button->id . '"' . (!empty($button->url) ? 'data-action="' . $button->url . '"' : '') . '>' . $button->label . '</button>';
                                                 }
                                                 echo '<span class="d-none d-sm-inline">', $tag, '</span>';
                                                 break;
                                             case 'group':
 
-                                                $data = trim(implode(' ', $button->data));
+                                                $data = '';
+                                                if (!empty($button->data)) {
+                                                    $data = trim(implode(' ', $button->data));
+                                                }
+
                                                 if ($button->actionBtn) {
-                                                    echo '<button type="button" class="btn btn-primary d-none d-sm-inline-block" ', $data . '>',
+                                                    echo '<button type="button" id="', $button->id, '" class="btn btn-primary d-none d-sm-inline-block" ', $data . '>',
                                                     SvgIconIndex::icon(SvgIconIndex::PLUS), $button->label, '</button>',
-                                                    '<button type="button" class="btn btn-primary d-sm-none btn-icon" ', $data,
+                                                    '<button type="button" id="', $button->smId, '" class="btn btn-primary d-sm-none btn-icon" ', $data,
                                                     ' aria-label="', $button->labelSm, '"></button>';
                                                     break;
                                                 }

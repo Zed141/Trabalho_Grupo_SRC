@@ -9,8 +9,18 @@ use yii\data\ActiveDataProvider;
 
 final class Vaults extends Model {
 
+    private int $userId;
     /** @var string|null */
     public ?string $description = null;
+
+    /**
+     * @param int   $userId
+     * @param array $config
+     */
+    public function __construct(int $userId, array $config = []) {
+        $this->userId = $userId;
+        parent::__construct($config);
+    }
 
     /**
      * {@inheritdoc}
@@ -31,7 +41,7 @@ final class Vaults extends Model {
         $query = Vault::find()
             ->alias('v')
             ->innerJoin(VaultAccess::tableName() . ' AS va', 'v.id = va.vault_id')
-            //->where(['va.user_id' => $userId])
+            ->where(['va.user_id' => $this->userId])
             ->asArray();
 
         $dataProvider = new ActiveDataProvider([

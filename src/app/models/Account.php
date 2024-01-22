@@ -112,11 +112,6 @@ final class Account extends BaseObject implements IdentityInterface {
 
         $key = $this->user->key;
         $challenge = strtoupper(hash('sha256', $this->user->email . Yii::$app->security->generateRandomString()));
-//        $ciphered = '';
-//
-//        if (!openssl_public_encrypt($challenge, $ciphered, $key, OPENSSL_PKCS1_OAEP_PADDING)) {
-//            return null;
-//        }
 
         $loadedKey = PublicKeyLoader::load($key);
         $ciphered = $loadedKey->withHash('sha256')

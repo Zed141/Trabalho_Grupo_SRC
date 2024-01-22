@@ -32,6 +32,15 @@ $config = [
             //'rules' => [
             //],
         ],
+//        'assetManager' => [
+//            'bundles' => [
+//                'yii\bootstrap\BootstrapAsset' => ['css' => [], 'js' => []]
+//            ]
+//        ],
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'nullDisplay' => ''
+        ],
 //        'session' => [
 //            // this is the name of the session cookie used for login on the app
 //            'name' => 'projsrc-app',
