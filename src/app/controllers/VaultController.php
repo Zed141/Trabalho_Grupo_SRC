@@ -26,7 +26,9 @@ final class VaultController extends Controller {
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['actions' => ['index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details'], 'allow' => true, 'roles' => ['@']]
+                    ['actions' => [
+                        'index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details', 'available-user-list'
+                    ], 'allow' => true, 'roles' => ['@']]
                 ]
             ]
         ];
@@ -40,7 +42,10 @@ final class VaultController extends Controller {
 
         $filter = new Vaults($userId);
         $dataProvider = $filter->search(Yii::$app->request->queryParams);
-        return $this->render('index', ['provider' => $dataProvider]);
+        return $this->render('index', [
+            'provider' => $dataProvider,
+            'userId' => $userId
+        ]);
     }
 
     /**
@@ -247,12 +252,47 @@ final class VaultController extends Controller {
     }
 
     /**
+     * @return \yii\web\Response
+     */
+    public function actionAvailableUserList(): Response {
+        $usersQry = User::find()->select(['id', 'name', 'email'])
+            ->where(['active' => true])
+            ->andWhere('id <> :id', [':id' => Yii::$app->user->getId()])
+            ->orderBy(['name' => SORT_ASC])
+            ->asArray();
+
+        $users = [];
+        foreach ($usersQry->all() as $row) {
+            $avatarContent = '';
+
+            $pieces = explode(' ', $row['name']);
+            $avatarContent = strtoupper(substr($pieces[0], 0, 1));
+            if (count($pieces) > 1) {
+                $avatarContent = strtoupper(substr(reset($pieces), 0, 1));
+            }
+
+            $users[] = (object)[
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'email' => $row['email'],
+                'avatar' => (object)[
+                    'img' => false,
+                    'content' => $avatarContent
+                ]
+            ];
+        }
+
+        return $this->asJson(['ok' => true, 'users' => $users]);
+    }
+
+    /**
      * @param int $vid
      * @param int $uid
      *
      * @return \yii\web\Response
      */
     public function actionShare(int $vid, int $uid): Response {
+        //TODO: Método em desenvolvimento (SLOPES)
         /** @var \app\orm\User $sharedWith */
         $sharedWith = User::find()->where(['id' => $uid, 'active' => 1])->one();
         if (!$sharedWith) {

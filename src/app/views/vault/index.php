@@ -26,12 +26,27 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
         'columns' => [
             'description',
             'username',
-            'url',
+            [
+                'attribute' => 'url',
+                'content' => function ($model) {
+                    if (empty($model['url'])) {
+                        return '';
+                    }
+                    return Html::a(SvgIconIndex::icon(SvgIconIndex::EXTERNAL_LINK) . ' ' . $model['url'], $model['url'], ['target' => '_blank']);
+                }
+            ],
             [
                 'label' => '',
-                'headerOptions' => ['style' => 'width: 5rem;'],
-                'content' => function ($model) {
-                    return Html::a('Edit', '#', ['data-id' => $model['id'], 'class' => 'edit-btn']);
+                'headerOptions' => ['style' => 'width: 10rem;'],
+                'content' => function ($model) use ($userId) {
+                    if ($userId == $model['owner_id']) {
+                        return '<div class="btn-list">'
+                            . Html::button(SvgIconIndex::icon(SvgIconIndex::SHARE) . Yii::t('app', 'Share'), ['type' => 'button', 'data-id' => $model['id'], 'class' => 'share-btn btn btn-sm btn-ghost-info'])
+                            . Html::button(SvgIconIndex::icon(SvgIconIndex::EDIT) . Yii::t('app', 'Edit'), ['type' => 'button', 'data-id' => $model['id'], 'class' => 'edit-btn btn btn-sm btn-ghost-success'])
+                            . '</div>';
+                    }
+
+                    return Html::button(SvgIconIndex::icon(SvgIconIndex::EYE) . Yii::t('app', 'Edit'), ['type' => 'button', 'data-id' => $model['id'], 'class' => 'edit-btn btn btn-sm btn-ghost-success']);
                 }
             ]
         ]
@@ -40,7 +55,9 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
 </div>
 
 <input type="hidden" id="details-url" value="<?= Url::to('/vault/details') ?>"/>
+<input type="hidden" id="users-url" value="<?= Url::to('/vault/available-user-list') ?>"/>
 
+<!-- MODALS -->
 <div class="modal modal-blur fade" id="modal-add-vault" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -108,3 +125,34 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
         </div>
     </div>
 </div>
+<!-- ./ Details modal -->
+
+<div class="modal modal-blur fade" id="modal-share-vault" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><?= Yii::t('app', 'Share Vault') ?></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= Yii::t('app', 'Close') ?>"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="divide-y" id="vault-users-list">
+                    <!-- PLACEHOLDER -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary"
+                        data-bs-dismiss="modal"><?= Yii::t('app', 'Cancel') ?></button>
+
+                <button type="button" class="btn btn-info ms-auto" data-bs-dismiss="modal" id="share-vault-btn"
+                        data-url="<?= Url::to(['/vault/share']) ?>" data-id="">
+                    <?= SvgIconIndex::icon(SvgIconIndex::SHARE) ?>
+                    <?= Yii::t('app', 'Share') ?>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Share modal -->

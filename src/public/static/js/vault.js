@@ -1,11 +1,23 @@
 (async () => {
 
+    const openShareVaultModal = (e) => {
+        const shareVaultModalElem = document.getElementById("modal-share-vault");
+        if (shareVaultModalElem === null) {
+            return;
+        }
+
+        const shareVaultModal = bootstrap.Modal.getOrCreateInstance(shareVaultModalElem);
+        const shareBtn = document.getElementById("share-vault-btn");
+        //saveBtn.dataset.id = "";
+        shareVaultModalElem.show();
+    };
+
     const openVaultModal = (e) => {
         const vaultDetailsModalElem = document.getElementById("modal-add-vault");
         if (vaultDetailsModalElem === null) {
             return;
         }
-        const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
+        const vaultDetailsModal = bootstrap.Modal.getOrCreateInstance(vaultDetailsModalElem);
 
         const saveBtn = document.getElementById("save-vault-btn");
         saveBtn.dataset.action = "create";
@@ -36,7 +48,7 @@
         if (vaultDetailsModalElem === null) {
             return;
         }
-        const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
+        const vaultDetailsModal = bootstrap.Modal.getOrCreateInstance(vaultDetailsModalElem);
 
         btn.addEventListener('click', (e) => {
             const id = e.currentTarget.dataset.id;
@@ -121,4 +133,52 @@
             });
         });
     }
+
+    document.querySelectorAll('.share-btn').forEach((btn) => {
+        const url = document.getElementById('users-url').value;
+        btn.addEventListener("click", (e) => {
+            const shareVaultModalElem = document.getElementById("modal-share-vault");
+            if (shareVaultModalElem === null) {
+                return;
+            }
+
+            const shareVaultModal = bootstrap.Modal.getOrCreateInstance(shareVaultModalElem);
+            const shareBtn = document.getElementById("share-vault-btn");
+
+            //saveBtn.dataset.id = "";
+            const id = e.currentTarget.dataset.id;
+            $.ajax(url, {
+                method: 'GET',
+                dataType: 'json',
+                contentType: 'application/json',
+            }).done((response) => {
+                if (!response.ok) {
+                    console.error(response.reason);
+                    return;
+                }
+
+                let lines = [];
+                const max = response.users.length;
+                for (let i = 0; i < max; i++) {
+                    let avatarContent = response.users[i].avatar.content;
+                    let name = response.users[i].name;
+                    let email = response.users[i].email;
+                    let id = response.users[i].id;
+
+                    if (response.users[i].avatar.img) {
+                        avatarContent = `<span class="avatar" style="background-image: url(${response.users[i].avatar.content})"></span>`;
+                    }
+
+                    lines.push(`<div><div class="row"><div class="col-auto"><span class="avatar">${avatarContent}</span></div>
+                            <div class="col"><div class="text-truncate"><strong>${name}</strong></div><div class="text-secondary">${email}</div></div>
+                            <div class="col-auto align-self-center"><input type="checkbox" class="share-chk" id="shared-with-${id}" data-id="${id}"></div></div></div>`);
+                }
+
+                document.getElementById('vault-users-list').innerHTML = lines.join('');
+                shareVaultModal.show();
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.error(textStatus, errorThrown);
+            });
+        });
+    });
 })();
