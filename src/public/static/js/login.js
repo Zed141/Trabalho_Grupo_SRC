@@ -1,5 +1,15 @@
 (async () => {
 
+    $('#login-form input[type="text"], #login-form input[type="email"]').on('keyup keypress', function (e) {
+        const keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
+
     let btn = document.getElementById('login-btn');
     if (btn !== null) {
         btn.addEventListener('click', (e) => {

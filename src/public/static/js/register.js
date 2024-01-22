@@ -1,4 +1,13 @@
 (async () => {
+    $('#registration-form input[type="text"], #registration-form input[type="email"]').on('keyup keypress', function (e) {
+        const keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
 
     /**
      * Function to generate RSA Public and Private Key pair.
