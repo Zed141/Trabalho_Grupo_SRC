@@ -10,10 +10,11 @@ const openDatabase = (dbName, storeName, version) => {
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
             db.createObjectStore(storeName, {autoIncrement: true});
-            console.log('create!');
+            console.log('Store created!');
         };
 
         request.onsuccess = (event) => {
+            console.log('Database opened');
             resolve(event.target.result);
         };
     });

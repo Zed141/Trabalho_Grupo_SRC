@@ -26,7 +26,7 @@ final class AppController extends Controller {
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
-                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true, 'roles' => ['*']],
+                    ['actions' => ['documentation', 'copyright', 'changelog'], 'allow' => true],
                     ['actions' => ['profile', 'settings', 'logout', 'index'], 'allow' => true, 'roles' => ['@']],
                     ['actions' => ['login', 'get-public-pem', 'start-login', 'confirm-login'], 'allow' => true, 'roles' => ['?']]
                 ],
@@ -135,20 +135,6 @@ final class AppController extends Controller {
         Yii::$app->user->login($account);
         Yii::$app->session->set('token', $token);
         return $this->asJson(['ok' => true, 'to' => Url::to(['/app/index'])]);
-    }
-
-    public function actionGetPublicPem(): Response {
-        //TODO: Validar necessidade
-        $request = Yii::$app->request;
-        $email = $request->post('email');
-
-        /** @var \app\orm\User $user */
-        $user = User::find()->where(['email' => $email])->one();
-        if ($user) {
-            return $this->asJson(['ok' => true, 'publicKeyPEM' => $user->key]);
-        }
-
-        return $this->asJson(['ok' => false, 'reason' => Yii::t('app', 'Wrong Credentials.')]);
     }
 
     /**

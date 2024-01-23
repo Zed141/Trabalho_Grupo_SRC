@@ -84,9 +84,9 @@ $this->beginPage();
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                            <a href="<?= Url::to(['/app/profile']) ?>" class="dropdown-item">Profile</a>
-                            <div class="dropdown-divider"></div>
-                            <a href="<?= Url::to(['/app/settings']) ?>" class="dropdown-item">Settings</a>
+                            <!-- <a href="<?= Url::to(['/app/profile']) ?>" class="dropdown-item">Profile</a> -->
+                            <!-- <div class="dropdown-divider"></div> -->
+                            <!-- <a href="<?= Url::to(['/app/settings']) ?>" class="dropdown-item">Settings</a> -->
                             <a href="<?= Url::to(['/app/logout']) ?>" class="dropdown-item">Logout</a>
                         </div>
                     </div>
@@ -162,7 +162,7 @@ $this->beginPage();
                             <ul class="list-inline list-inline-dots mb-0">
                                 <li class="list-inline-item">
                                     <a href="<?= Url::to(['/app/documentation']) ?>"
-                                       class="link-secondary" rel="noopener"><?= Yii::t('app', 'Help/FAQ') ?></a>
+                                       class="link-secondary" rel="noopener"><?= Yii::t('app', 'About') ?></a>
                                 </li>
                             </ul>
                         </div>

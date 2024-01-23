@@ -12,7 +12,7 @@ use yii\helpers\Url;
             <div class="container-xl">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= $baseUrl ?>">
+                        <a class="nav-link" href="<?= $baseUrl ?>/">
                             <span class="nav-link-icon d-md-none d-lg-inline-block"><?= SvgIconIndex::icon(SvgIconIndex::HOME) ?></span>
                             <span class="nav-link-title"> <?= Yii::t('app', 'Home') ?></span>
                         </a>

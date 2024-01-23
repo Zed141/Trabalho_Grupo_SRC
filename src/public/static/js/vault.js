@@ -13,25 +13,21 @@
         }
         const newVaultModal = bootstrap.Modal.getOrCreateInstance(newVaultModalElem);
 
-        const saveBtn = document.getElementById("save-vault-btn");
-        saveBtn.dataset.action = "create";
-        saveBtn.dataset.id = "";
-
-        document.getElementById('vault-description').value = "";
-        document.getElementById('vault-data').value = "";
-        document.getElementById('vault-username').value = "";
-        document.getElementById('vault-url').value = "";
-        document.getElementById('vault-notes').value = "";
+        document.getElementById('c-vault-description').value = "";
+        document.getElementById('c-vault-data').value = "";
+        document.getElementById('c-vault-username').value = "";
+        document.getElementById('c-vault-url').value = "";
+        document.getElementById('c-vault-notes').value = "";
 
         newVaultModal.show();
     };
 
-    let btn = document.getElementById("create-vault-btn");
+    let btn = document.getElementById("open-create-vault-btn");
     if (btn !== null) {
         btn.addEventListener('click', openVaultModal);
     }
 
-    btn = document.getElementById("create-vault-smbtn");
+    btn = document.getElementById("open-create-vault-smbtn");
     if (btn !== null) {
         btn.addEventListener('click', openVaultModal);
     }
@@ -108,11 +104,11 @@
                                                                     lastAccessDetails.tag = tag;
                                                                     lastAccessDetails.secret = secret;
 
-                                                                    document.getElementById('vault-data').value = response.data;
-                                                                    document.getElementById('vault-description').value = response.description;
-                                                                    document.getElementById('vault-username').value = response.username;
-                                                                    document.getElementById('vault-url').value = response.url;
-                                                                    document.getElementById('vault-notes').value = response.notes;
+                                                                    document.getElementById('e-vault-data').value = response.data;
+                                                                    document.getElementById('e-vault-description').value = response.description;
+                                                                    document.getElementById('e-vault-username').value = response.username;
+                                                                    document.getElementById('e-vault-url').value = response.url;
+                                                                    document.getElementById('e-vault-notes').value = response.notes;
 
                                                                     const saveBtn = document.getElementById("edit-vault-btn");
                                                                     saveBtn.dataset.id = response.id;
@@ -241,20 +237,19 @@
     if (btn !== null) {
         btn.addEventListener("click", (e) => {
             const shareUrl = e.currentTarget.dataset.url;
+            const id = e.currentTarget.dataset.id;
             if (shareUrl === undefined || shareUrl === null || shareUrl.length <= 0) {
                 return;
             }
 
-            let ids = [];
-            document.querySelectorAll(".share-chk:checked").forEach(check => {
-                ids.push(check.dataset.id);
-            });
-
-            if (ids.length <= 0) {
-                return null;
+            const selectedElem = document.querySelector(".share-chk:checked");
+            if (selectedElem === null) {
+                return;
             }
 
-            $.ajax(shareUrl, {
+            const userId = selectedElem.value;
+            const url = `${shareUrl}?vid=${id}&uid=${userId}`;
+            $.ajax(url, {
                 method: 'POST',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -262,7 +257,6 @@
                     tag: lastAccessDetails.tag,
                     nonce: lastAccessDetails.nonce,
                     secret: lastAccessDetails.secret,
-                    ids: ids
                 })
             }).done((response) => {
                 if (!response.ok) {
@@ -271,6 +265,7 @@
                 }
 
                 //NOTE: just refresh, could be improved
+                alert(response.message);
                 window.location.reload();
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.error(textStatus, errorThrown);
@@ -312,6 +307,7 @@
                     return;
                 }
 
+                const email = response.email;
                 const encryptedNonce = base64ToArrayBuffer(response.nonce);
                 const encryptedTag = base64ToArrayBuffer(response.tag);
                 const encryptedSecret = base64ToArrayBuffer(response.secret);
@@ -332,7 +328,8 @@
                                                             .then(decryptedSecret => {
                                                                 const secret = btoa(new TextDecoder().decode(new Uint8Array(decryptedSecret)));
 
-                                                                $.ajax(document.getElementById('users-url').value, {
+                                                                const usersUrl = document.getElementById('users-url').value;
+                                                                $.ajax(`${usersUrl}?vid=${id}`, {
                                                                     method: 'GET',
                                                                     dataType: 'json',
                                                                     contentType: 'application/json',
@@ -360,9 +357,14 @@
                                                                             userAvatar = `<span class="avatar" style="background-image: url(${user.avatar.content})"></span>`;
                                                                         }
 
+                                                                        let ctrl = `<input type="radio" name="sharewith" class="share-chk" id="shared-with-${userId}" value="${userId}">`;
+                                                                        if(user.shared) {
+                                                                            ctrl = '<button type="button" class="btn btn-sm btn-ghost-danger">Revoke</button>'
+                                                                        }
+
                                                                         lines.push(`<div><div class="row"><div class="col-auto"><span class="avatar">${userAvatar}</span></div>
                             <div class="col"><div class="text-truncate"><strong>${userName}</strong></div><div class="text-secondary">${userEmail}</div></div>
-                            <div class="col-auto align-self-center"><input type="checkbox" class="share-chk" id="shared-with-${userId}" data-id="${userId}"></div></div></div>`);
+                            <div class="col-auto align-self-center">${ctrl}</div></div></div>`);
                                                                     }
 
                                                                     shareBtn.dataset.id = id;

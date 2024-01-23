@@ -12,6 +12,7 @@ use phpseclib3\Crypt\AES;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Crypt\Random;
 use Yii;
+use yii\db\Query;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
@@ -125,7 +126,8 @@ final class VaultController extends Controller {
             'description' => $description,
             'username' => $username,
             'url' => $url,
-            'notes' => $notes
+            'notes' => $notes,
+            'id' => $id
         ]);
     }
 
@@ -341,38 +343,46 @@ final class VaultController extends Controller {
     /**
      * Lists available users that a vault can be shared with.
      *
+     * @param int|null $vid
+     *
      * @return \yii\web\Response
      */
-    public function actionAvailableUserList(): Response {
-        $usersQry = User::find()->select(['id', 'name', 'email'])
-            ->where(['active' => true])
-            ->andWhere('id <> :id', [':id' => Yii::$app->user->getId()])
-            ->orderBy(['name' => SORT_ASC])
-            ->asArray();
+    public function actionAvailableUserList(?int $vid): Response {
+        $usersQry = (new Query())
+            ->select(['u.id', 'u.name', 'u.email', 'va.user_id'])
+            ->from(User::tableName() . 'AS u')
+            ->leftJoin(VaultAccess::tableName() . ' AS va', 'u.id = va.user_id AND va.vault_id = :vid', [':vid' => $vid])
+            ->where(['u.active' => true])
+            ->andWhere('u.id <> :uid', [':uid' => Yii::$app->user->getId()])
+            ->orderBy(['u.name' => SORT_ASC]);
 
         $users = [];
         foreach ($usersQry->all() as $row) {
+            if (isset($users[$row['id']])) {
+                continue;
+            }
+
             //TODO: user image
             $avatarContent = '';
-
             $pieces = explode(' ', $row['name']);
             $avatarContent = strtoupper(substr($pieces[0], 0, 1));
             if (count($pieces) > 1) {
                 $avatarContent = strtoupper(substr(reset($pieces), 0, 1));
             }
 
-            $users[] = (object)[
+            $users[$row['id']] = (object)[
                 'id' => $row['id'],
                 'name' => $row['name'],
                 'email' => $row['email'],
                 'avatar' => (object)[
                     'img' => false,
                     'content' => $avatarContent
-                ]
+                ],
+                'shared' => $row['user_id'] ? true : false
             ];
         }
 
-        return $this->asJson(['ok' => true, 'users' => $users]);
+        return $this->asJson(['ok' => true, 'users' => array_values($users)]);
     }
 
     /**
@@ -437,6 +447,6 @@ final class VaultController extends Controller {
 
         $userName = $sharedWith->name;
         $vaultDescription = $accessInfo->vault->description;
-        return $this->asJson(['ok' => true, 'message' => "Vault '$vaultDescription' shared with $userName."]);
+        return $this->asJson(['ok' => true, 'message' => "Vault '$vaultDescription' was shared with $userName."]);
     }
 }

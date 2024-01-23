@@ -1,4 +1,6 @@
 (async () => {
+    const dbName = 'SRC-DATABASE';
+
     $('#registration-form input[type="text"], #registration-form input[type="email"]').on('keyup keypress', function (e) {
         const keyCode = e.keyCode || e.which;
         if (keyCode === 13) {
@@ -55,10 +57,11 @@
         let dbVersion = 0;
         getDBVersion(dbName)
             .then(version => {
-                dbVersion = version;
-                console.log(`Current version of the database '${dbName}': ${version}`);
+                dbVersion = version + 1; //TODO: HACK!
+                //dbVersion = version;
+                console.log(`Current version of the database '${dbName}': ${version} | store is: ${storeName}`);
                 openDatabase(dbName, storeName, dbVersion).then(db => {
-                    const transaction = db.transaction([storeName], 'readwrite', {durability: 'strict'});
+                    const transaction = db.transaction([storeName], 'readwrite'); //TODO: {durability: 'strict'}
                     const objectStore = transaction.objectStore(storeName);
 
                     const request = objectStore.put(key, keyType);

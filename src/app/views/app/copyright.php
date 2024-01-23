@@ -1,11 +1,10 @@
 <?php
 
-use app\helpers\SvgIconIndex;
-use yii\helpers\Url;
-
 /** @var yii\web\View $this */
 
-$this->title = 'CipheredLock';
+use app\helpers\SvgIconIndex;
+
+$this->title = 'Copyright Info';
 ?>
 
 <div class="alert alert-info" role="alert">
@@ -14,10 +13,10 @@ $this->title = 'CipheredLock';
             <?= SvgIconIndex::icon(SvgIconIndex::INFO) ?>
         </div>
         <div>
-            <h4 class="alert-title">CipheredLock</h4>
+            <h4 class="alert-title">Masters in Cybersecurity and Digital Forensics</h4>
             <div class="text-secondary">
-                Welcome to you account. Check your passwords in the
-                <a href="<?= Url::to(['/vault/index']) ?>">vaults</a> screen.
+                <p>ESTG, IPL</p>
+                <p>José Irio<br />Sérgio Lopes</p>
             </div>
         </div>
     </div>

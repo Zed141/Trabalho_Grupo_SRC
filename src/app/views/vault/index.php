@@ -14,7 +14,7 @@ $this->params = [
     'buttons' => [
         (object)[
             'type' => 'group', 'url' => '#', 'labelSm' => 'Create Vault', 'label' => 'Create Vault', 'actionBtn' => true,
-            'id' => 'create-vault-btn', 'smId' => 'create-vault-smbtn'
+            'id' => 'open-create-vault-btn', 'smId' => 'open-create-vault-smbtn'
         ]
     ]
 ];
