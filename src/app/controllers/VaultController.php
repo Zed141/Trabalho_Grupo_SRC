@@ -27,7 +27,7 @@ final class VaultController extends Controller {
                 'class' => AccessControl::class,
                 'rules' => [
                     ['actions' => [
-                        'index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details', 'available-user-list', "get-vault-secret"
+                        'index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details', 'available-user-list', 'vault-secret'
                     ], 'allow' => true, 'roles' => ['@']]
                 ]
             ]
@@ -35,6 +35,8 @@ final class VaultController extends Controller {
     }
 
     /**
+     * Lists existing vaults the user has access to.
+     *
      * @return string
      */
     public function actionIndex(): string {
@@ -49,35 +51,44 @@ final class VaultController extends Controller {
     }
 
     /**
+     * Returns a vault' secret information, needed for subsequent calls to the vault details.
+     *
      * @param int|null $id
      *
      * @return \yii\web\Response
      */
-    public function actionGetVaultSecret(?int $id = null): Response{
+    public function actionVaultSecret(?int $id = null): Response {
         if (!$id) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
-        /** @var \app\orm\User  $user */
-        $user = Yii::$app->user->identity;
-        $email = Yii::$app->user->identity->getEmail();
+        /** @var \app\models\Account $account */
+        $account = Yii::$app->user->identity;
+        $email = $account->getEmail();
 
         /** @var \app\orm\Vault $vaultAccess */
-        $vaultAccess = VaultAccess::find()->where(['vault_id' => $id, 'user_id' => $user->id])->one();
+        $vaultAccess = VaultAccess::find()->where(['vault_id' => $id, 'user_id' => $account->getId()])->one();
         if (!$vaultAccess) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
-        return $this->asJson(['ok' => true,
+        return $this->asJson([
+            'ok' => true,
             'nonce' => $vaultAccess->nonce,
             'secret' => $vaultAccess->secret,
             'tag' => $vaultAccess->tag,
-            'email' => $email]);
-
+            'email' => $email
+        ]);
     }
-    public function actionDetails(?int $id = null): Response
-    {
 
+    /**
+     * Loads a vault's details and encryption information.
+     *
+     * @param int|null $id
+     *
+     * @return \yii\web\Response
+     */
+    public function actionDetails(?int $id = null): Response {
         if (!$id) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
@@ -87,18 +98,16 @@ final class VaultController extends Controller {
         $tag = base64_decode($request->post('tag'));
         $secret = base64_decode($request->post('secret'));
 
-
         /** @var \app\orm\User $user */
         $user = Yii::$app->user->identity->getUser();
 
         /** @var \app\orm\Vault $vault */
-        $vaultData = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
-        if (!$vaultData) {
+        $vault = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
+        if (!$vault) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
-
-        $dataEncrypted = base64_decode($vaultData->data);
+        $dataEncrypted = base64_decode($vault->data);
 
         $vaultAES = new AES('gcm');
         $vaultAES->setNonce($nonce);
@@ -106,21 +115,23 @@ final class VaultController extends Controller {
         $vaultAES->setTag($tag);
         $dataDecrypted = $vaultAES->decrypt($dataEncrypted);
 
-        $description = $vaultData->description;
-        $username = $vaultData->username;
-        $url = $vaultData->url;
-        $notes = $vaultData->notes;
+        $description = $vault->description;
+        $username = $vault->username;
+        $url = $vault->url;
+        $notes = $vault->notes;
 
         return $this->asJson(['ok' => true,
             'data' => $dataDecrypted,
             'description' => $description,
             'username' => $username,
             'url' => $url,
-            'notes' => $notes,
+            'notes' => $notes
         ]);
     }
 
     /**
+     * Registers a new vault in the system (and database).
+     *
      * @return \yii\web\Response
      */
     public function actionCreate(): Response {
@@ -159,15 +170,13 @@ final class VaultController extends Controller {
 
             $vaultAES = new AES('gcm');
             $vaultAES->setNonce($nonce);
-
             $vaultAES->setKey($aesSecret);
             $vaultData = $vaultAES->encrypt($data);
-            $tag = $vaultAES->getTag();
 
+            $tag = $vaultAES->getTag();
             $cipheredTag = $loadedKey->withHash('sha256')
                 ->withMGFHash('sha256')
                 ->encrypt($tag);
-
 
             $vault = new Vault();
             $vault->owner_id = $user->id;
@@ -203,43 +212,71 @@ final class VaultController extends Controller {
     }
 
     /**
-     * @return \yii\web\Response|string
+     * Updates a vault's details.
+     *
+     * @return \yii\web\Response
      */
-    public function actionUpdate(): Response|string {
+    public function actionUpdate(): Response {
         $request = Yii::$app->request;
-        $id = $request->post('id');
+
+        $id = (int)$request->post('id');
         if (!$id) {
-            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault ID.']);
         }
 
-        /** @var \app\orm\Vault $vault */
-        $vault = Vault::find()->where(['id' => $id, 'owner_id' => 1, /*$user->id*/])->one();
-        if (!$vault) {
-            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault']);
-        }
+        $description = $request->post('description');
+        $data = $request->post('data');
 
-        $data = [
-            'Vault[description]' => $request->post('description'),
-            'Vault[data]' => $request->post('data'),
-            'Vault[username]' => $request->post('username'),
-            'Vault[url]' => $request->post('url'),
-            'Vault[notes]' => $request->post('notes')
-        ];
+        $username = $request->post('username');
+        $url = $request->post('url');
+        $notes = $request->post('notes');
+
+        $nonce = base64_decode($request->post('nonce'));
+        $tag = base64_decode($request->post('tag'));
+        $secret = base64_decode($request->post('secret'));
+
+        if (empty($description)) {
+            return $this->asJson(['ok' => false, 'reason' => 'Description is a required field.']);
+        }
 
         /** @var \app\orm\User $user */
-        $user = Yii::$app->user->identity;
-        $form = new Form(Yii::$app->getDb(), $user, $vault);
-        if ($form->load($data)) {
-            if ($form->save()) {
-                return $this->asJson(['ok' => true]);
-            }
-            return $this->asJson(['ok' => false, 'reason' => implode(' ', $form->getErrorSummary(true))]);
+        $user = Yii::$app->user->identity->getUser();
+
+        /** @var \app\orm\Vault $vault */
+        $vault = Vault::find()
+            ->alias('v')
+            ->innerJoin(VaultAccess::tableName() . ' AS va', 'v.id = va.vault_id')
+            ->where(['va.user_id' => $user->id, 'vault_id' => $id])
+            ->one();
+
+        if (!$vault) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
-        return $this->asJson(['ok' => false, 'reason' => 'Invalid request']);
+        $vaultAES = new AES('gcm');
+        $vaultAES->setNonce($nonce);
+        $vaultAES->setKey($secret);
+        $vaultAES->setTag($tag);
+        $decryptedData = $vaultAES->decrypt(base64_decode($vault->data));
+
+        if ($data != $decryptedData) {
+            $vault->data = base64_encode($vaultAES->encrypt($data));
+        }
+
+        $vault->description = $description;
+        $vault->username = $username ? trim($username) : null;
+        $vault->url = $url ? trim($url) : null;
+        $vault->notes = $notes ? trim($notes) : null;
+        if (!$vault->save(false)) {
+            return $this->asJson(['ok' => false, 'reason' => implode(' ', $vault->getErrorSummary(true))]);
+        }
+
+        return $this->asJson(['ok' => true]);
     }
 
     /**
+     * Removes a vault from the system (and database).
+     *
      * @param int $id
      *
      * @return \yii\web\Response
@@ -302,6 +339,8 @@ final class VaultController extends Controller {
     }
 
     /**
+     * Lists available users that a vault can be shared with.
+     *
      * @return \yii\web\Response
      */
     public function actionAvailableUserList(): Response {
@@ -313,6 +352,7 @@ final class VaultController extends Controller {
 
         $users = [];
         foreach ($usersQry->all() as $row) {
+            //TODO: user image
             $avatarContent = '';
 
             $pieces = explode(' ', $row['name']);
@@ -336,13 +376,14 @@ final class VaultController extends Controller {
     }
 
     /**
+     * Shares a vault with a specific user.
+     *
      * @param int $vid
      * @param int $uid
      *
      * @return \yii\web\Response
      */
     public function actionShare(int $vid, int $uid): Response {
-        //TODO: Método em desenvolvimento (SLOPES)
         /** @var \app\orm\User $sharedWith */
         $sharedWith = User::find()->where(['id' => $uid, 'active' => 1])->one();
         if (!$sharedWith) {
@@ -364,32 +405,34 @@ final class VaultController extends Controller {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
-        $secret = Yii::$app->request->post('secret');
-        if (empty($secret)) {
-            return $this->asJson(['ok' => false, 'reason' => '//TODO: ...']);
-        }
+        $request = Yii::$app->request;
+        $nonce = base64_decode($request->post('nonce'));
+        $tag = base64_decode($request->post('tag'));
+        $secret = base64_decode($request->post('secret'));
 
-        //TODO: ....
-        //decoded vault secret
-
-        $challenge = strtoupper(hash('sha256', $this->user->email . Yii::$app->security->generateRandomString()));
-
+        $key = $sharedWith->key;
         $loadedKey = PublicKeyLoader::load($key);
-        $ciphered = $loadedKey->withHash('sha256')
+        $cipheredAESSecret = $loadedKey->withHash('sha256')
             ->withMGFHash('sha256')
-            ->encrypt($challenge);
+            ->encrypt($secret);
 
-//        $ciphered = null;
-//        if (!openssl_public_encrypt($secret, $ciphered, $sharedWith->key)) {
-//            return $this->asJson(['ok' => false, 'reason' => 'Encryption error.']);
-//        }
+        $cipheredNonce = $loadedKey->withHash('sha256')
+            ->withMGFHash('sha256')
+            ->encrypt($nonce);
 
-        $newAccess = new VaultAccess();
-        $newAccess->vault_id = $vid;
-        $newAccess->user_id = $sharedWith->id;
-        $newAccess->secret = base64_encode($ciphered);
-        if (!$newAccess->save(false)) {
-            return $this->asJson(['ok' => false, 'message' => $newAccess->getErrorSummary(true)]);
+        $cipheredTag = $loadedKey->withHash('sha256')
+            ->withMGFHash('sha256')
+            ->encrypt($tag);
+
+        $access = new VaultAccess();
+        $access->user_id = $sharedWith->id;
+        $access->vault_id = $accessInfo->vault_id;
+        $access->secret = base64_encode($cipheredAESSecret);
+        $access->nonce = base64_encode($cipheredNonce);
+        $access->tag = base64_encode($cipheredTag);
+
+        if (!$access->save(false)) {
+            return $this->asJson(['ok' => false, 'message' => $access->getErrorSummary(true)]);
         }
 
         $userName = $sharedWith->name;

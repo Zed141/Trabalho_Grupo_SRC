@@ -5,7 +5,7 @@ use yii\db\Migration;
 /**
  * Class m240120_014757_login
  */
-class m240120_014757_login extends Migration {
+final class m240120_014757_login extends Migration {
     /**
      * {@inheritdoc}
      */

@@ -59,13 +59,8 @@ final class Vaults extends Model {
             return $dataProvider;
         }
 
-//        $query->andFilterWhere(['ilike', '', $this->])
-//              ->andFilterWhere(['ilike', '', $this->])
-//              ->andFilterWhere(['ilike', '', $this->])
-//              ->andFilterWhere(['ilike', '', $this->])
-//              ->andFilterWhere(['ilike', '', $this->])
-//              ->andFilterWhere(['ilike', '', $this->]);
-//
+        //TODO: filter options
+        //$query->andFilterWhere(['ilike', '', $this->]);
         return $dataProvider;
     }
 }

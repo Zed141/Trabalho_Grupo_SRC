@@ -10,9 +10,6 @@ use yii\web\View;
 AppAsset::register($this);
 
 $baseUrl = Yii::$app->urlManager->baseUrl;
-$subtitle = $this->params['subtitle'] ?? null;
-$buttons = $this->params['buttons'] ?? [];
-
 $this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
 
 $this->beginPage();

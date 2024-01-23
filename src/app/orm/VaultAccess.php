@@ -14,9 +14,8 @@ use yii\db\ActiveRecord;
  * @property int            $user_id  PK
  * @property int            $vault_id PK
  * @property string         $secret   Encoded and encrypted secret, used when accessing a vault's data
- * @property string|null    $nonce    Reserved for future use; may need to be "time based"
- * @property string|null    $tag    Tag of the encryption - needed for decryption
- *
+ * @property string|null    $nonce    Nonce value used in AES with GCM
+ * @property string|null    $tag      Tag of the encryption, used in AES
  *
  * @property \app\orm\User  $user
  * @property \app\orm\Vault $vault

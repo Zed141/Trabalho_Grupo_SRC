@@ -9,8 +9,9 @@ use yii\web\View;
 
 AppAsset::register($this);
 
-$this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
 $baseUrl = Yii::$app->urlManager->baseUrl;
+$this->registerJsFile('/static/js/common.js', ['position' => View::POS_HEAD]);
+
 $this->beginPage();
 ?>
     <!doctype html>

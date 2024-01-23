@@ -87,7 +87,10 @@ final class Account extends BaseObject implements IdentityInterface {
         return $this->user?->id;
     }
 
-    public function getEmail(){
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string {
         return $this->user?->email;
     }
 

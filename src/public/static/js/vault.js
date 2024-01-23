@@ -1,11 +1,17 @@
 (async () => {
 
+    const lastAccessDetails = {
+        nonce: null,
+        tag: null,
+        secret: null
+    };
+
     const openVaultModal = (e) => {
-        const vaultDetailsModalElem = document.getElementById("modal-add-vault");
-        if (vaultDetailsModalElem === null) {
+        const newVaultModalElem = document.getElementById("modal-create-vault");
+        if (newVaultModalElem === null) {
             return;
         }
-        const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
+        const newVaultModal = bootstrap.Modal.getOrCreateInstance(newVaultModalElem);
 
         const saveBtn = document.getElementById("save-vault-btn");
         saveBtn.dataset.action = "create";
@@ -17,34 +23,37 @@
         document.getElementById('vault-url').value = "";
         document.getElementById('vault-notes').value = "";
 
-        vaultDetailsModal.show();
+        newVaultModal.show();
     };
 
-    let btn = document.getElementById("add-vault-btn");
+    let btn = document.getElementById("create-vault-btn");
     if (btn !== null) {
         btn.addEventListener('click', openVaultModal);
     }
 
-    btn = document.getElementById("add-vault-smbtn");
+    btn = document.getElementById("create-vault-smbtn");
     if (btn !== null) {
         btn.addEventListener('click', openVaultModal);
     }
 
     document.querySelectorAll('.edit-btn').forEach((btn) => {
-        const url1 = document.getElementById('get-vault-secret-url').value;
+        const url1 = document.getElementById('vault-secret-url').value;
         const url2 = document.getElementById('details-url').value;
-        const vaultDetailsModalElem = document.getElementById("modal-add-vault");
+
+        const vaultDetailsModalElem = document.getElementById("modal-edit-vault");
         if (vaultDetailsModalElem === null) {
             return;
         }
-        const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
-
+        const vaultDetailsModal = bootstrap.Modal.getOrCreateInstance(vaultDetailsModalElem);
 
         btn.addEventListener('click', (e) => {
+            lastAccessDetails.nonce = null;
+            lastAccessDetails.tag = null;
+            lastAccessDetails.secret = null;
 
             const id = e.currentTarget.dataset.id;
-
             const getVaultSecretUrl = `${url1}?id=${id}`;
+            const detailsUrl = `${url2}?id=${id}`;
             $.ajax(getVaultSecretUrl, {
                 method: 'GET',
                 dataType: 'json',
@@ -54,13 +63,12 @@
                     console.error(response.reason);
                     return;
                 }
-                console.log("response", response);
+
                 const email = response.email;
                 const encryptedNonce = base64ToArrayBuffer(response.nonce);
                 const encryptedTag = base64ToArrayBuffer(response.tag);
                 const encryptedSecret = base64ToArrayBuffer(response.secret);
 
-                // Fetch Public Key from the Indexed DB
                 getDBVersion(LocalDBName)
                     .then(version => {
                         openDatabase(LocalDBName, email, version)
@@ -68,103 +76,96 @@
                                 fetchDataByKeyFromDB(db, email, "kPair")
                                     .then(keyPair => {
                                         window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedNonce)
-                                            .then(nonceDecrypted =>{
-                                                const nonce = arrayBufferToBase64(nonceDecrypted);
-
+                                            .then(decryptedNonce => {
+                                                const nonce = arrayBufferToBase64(decryptedNonce);
                                                 window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedTag)
-                                                    .then(tagDecrypted =>{
-                                                        const tag = arrayBufferToBase64(tagDecrypted);
+                                                    .then(decryptedTag => {
+                                                        const tag = arrayBufferToBase64(decryptedTag);
+                                                        window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedSecret)
+                                                            .then(decryptedSecret => {
+                                                                const secret = btoa(new TextDecoder().decode(new Uint8Array(decryptedSecret)));
 
-                                                    window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedSecret)
-                                                        .then(secretDecrypted =>{
-                                                            const secret = new TextDecoder().decode(new Uint8Array(secretDecrypted));
+                                                                $.ajax(detailsUrl, {
+                                                                    method: 'POST',
+                                                                    dataType: 'json',
+                                                                    contentType: 'application/json',
+                                                                    data: JSON.stringify({
+                                                                        nonce: nonce,
+                                                                        tag: tag,
+                                                                        secret: secret,
+                                                                    })
+                                                                }).done((response) => {
+                                                                    if (!response.ok) {
+                                                                        console.error(response.reason);
+                                                                        return;
+                                                                    }
 
+                                                                    //document.getElementById("v-nonce").value = nonce;
+                                                                    //document.getElementById("v-tag").value = tag;
+                                                                    //document.getElementById("v-sec").value = secret;
 
-                                                            const detailsUrl = `${url2}?id=${id}`;
-                                                            $.ajax(detailsUrl, {
-                                                                method: 'POST',
-                                                                dataType: 'json',
-                                                                contentType: 'application/json',
-                                                                data: JSON.stringify({
-                                                                    nonce: nonce,
-                                                                    tag: tag,
-                                                                    secret: btoa(secret),
+                                                                    lastAccessDetails.nonce = nonce;
+                                                                    lastAccessDetails.tag = tag;
+                                                                    lastAccessDetails.secret = secret;
 
-                                                                })
-                                                            }).done((response) => {
-                                                                if (!response.ok) {
-                                                                    console.error(response.reason);
-                                                                    return;
-                                                                }
-                                                                console.log("repsonse: ", response);
-                                                                document.getElementById('vault-data').value = response.data;
-                                                                document.getElementById('vault-description').value = response.description;
-                                                                document.getElementById('vault-username').value = response.username;
-                                                                document.getElementById('vault-url').value = response.url;
-                                                                document.getElementById('vault-notes').value = response.notes;
+                                                                    document.getElementById('vault-data').value = response.data;
+                                                                    document.getElementById('vault-description').value = response.description;
+                                                                    document.getElementById('vault-username').value = response.username;
+                                                                    document.getElementById('vault-url').value = response.url;
+                                                                    document.getElementById('vault-notes').value = response.notes;
 
-                                                                const saveBtn = document.getElementById("save-vault-btn");
-                                                                saveBtn.dataset.action = "update";
-                                                                saveBtn.dataset.id = response.id;
+                                                                    const saveBtn = document.getElementById("edit-vault-btn");
+                                                                    saveBtn.dataset.id = response.id;
 
-                                                                vaultDetailsModal.show();
-                                                            })
-
-
-                                                    })
-                                                }
-
-
-                                            )
-                                    })
-                            })
-                    })
-
-                }).fail((jqXHR, textStatus, errorThrown) => {
-                    console.error(textStatus, errorThrown);
+                                                                    vaultDetailsModal.show();
+                                                                }).fail((jqXHR, textStatus, errorThrown) => {
+                                                                    console.error(textStatus, errorThrown);
+                                                                });
+                                                            });
+                                                    });
+                                            });
+                                    }).catch(error => { // ./fetchDataByKeyFromDB
+                                    console.error('Error while fetching data:', error);
+                                });
+                            }).catch(error => { // ./openDatabase
+                            console.error('Error while fetching data:', error);
+                        });
+                    }).catch(error => { // ./getDBVersion
+                    console.error('Error while fetching data:', error);
                 });
-
-            })
-
-
-        });
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.error(textStatus, errorThrown);
+            });
+        });//./add click event
     });
 
-    btn = document.getElementById("save-vault-btn");
+    btn = document.getElementById("create-vault-btn");
     if (btn !== null) {
         btn.addEventListener("click", (e) => {
-            const description = document.getElementById("vault-description").value;
-            const data = document.getElementById("vault-data").value;
-            const username = document.getElementById("vault-username").value;
-            const url = document.getElementById("vault-url").value;
-            const notes = document.getElementById("vault-notes").value;
-
-            const action = e.currentTarget.dataset.action;
-            if (action !== "create" && action !== 'update') {
-                console.error("Invalid vault action, missing data attribute in save button");
-                return;
-            }
+            const description = document.getElementById("c-vault-description").value;
+            const data = document.getElementById("c-vault-data").value;
+            const username = document.getElementById("c-vault-username").value;
+            const url = document.getElementById("c-vault-url").value;
+            const notes = document.getElementById("c-vault-notes").value;
 
             if (description === undefined || description === null || description.length <= 0) {
                 return;
             }
 
-            if (action === "create" && (data === undefined || data === null || data.length <= 0)) {
+            if (data === undefined || data === null || data.length <= 0) {
                 return;
             }
 
-
-            const actionUrl = action === "create" ? e.currentTarget.dataset.createurl : e.currentTarget.dataset.updateurl;
-            if (actionUrl === undefined || actionUrl === null || actionUrl.length <= 0) {
+            const createUrl = e.currentTarget.dataset.url;
+            if (createUrl === undefined || createUrl === null || createUrl.length <= 0) {
                 return;
             }
 
-            $.ajax(actionUrl, {
+            $.ajax(createUrl, {
                 method: 'POST',
                 dataType: 'json',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    id: e.currentTarget.dataset.id,
                     description: description,
                     data: data,
                     username: username,
@@ -184,4 +185,244 @@
             });
         });
     }
+
+    btn = document.getElementById("edit-vault-btn");
+    if (btn !== null) {
+        btn.addEventListener("click", (e) => {
+            const description = document.getElementById("e-vault-description").value;
+            const data = document.getElementById("e-vault-data").value;
+            const username = document.getElementById("e-vault-username").value;
+            const url = document.getElementById("e-vault-url").value;
+            const notes = document.getElementById("e-vault-notes").value;
+
+            if (description === undefined || description === null || description.length <= 0) {
+                return;
+            }
+
+            if (data === undefined || data === null || data.length <= 0) {
+                return;
+            }
+
+            const updateUrl = e.currentTarget.dataset.url;
+            if (updateUrl === undefined || updateUrl === null || updateUrl.length <= 0) {
+                return;
+            }
+
+            $.ajax(updateUrl, {
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    id: e.currentTarget.dataset.id,
+                    description: description,
+                    data: data,
+                    username: username,
+                    url: url,
+                    notes: notes,
+                    tag: lastAccessDetails.tag,
+                    nonce: lastAccessDetails.nonce,
+                    secret: lastAccessDetails.secret
+                })
+            }).done((response) => {
+                if (!response.ok) {
+                    console.error(response.reason);
+                    return;
+                }
+
+                //NOTE: just refresh, could be improved
+                window.location.reload();
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.error(textStatus, errorThrown);
+            });
+        });
+    }
+    
+    btn = document.getElementById("share-vault-btn");
+    if (btn !== null) {
+        btn.addEventListener("click", (e) => {
+            const shareUrl = e.currentTarget.dataset.url;
+            if (shareUrl === undefined || shareUrl === null || shareUrl.length <= 0) {
+                return;
+            }
+
+            let ids = [];
+            document.querySelectorAll(".share-chk:checked").forEach(check => {
+                ids.push(check.dataset.id);
+            });
+
+            if (ids.length <= 0) {
+                return null;
+            }
+
+            $.ajax(shareUrl, {
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    tag: lastAccessDetails.tag,
+                    nonce: lastAccessDetails.nonce,
+                    secret: lastAccessDetails.secret,
+                    ids: ids
+                })
+            }).done((response) => {
+                if (!response.ok) {
+                    console.error(response.reason);
+                    return;
+                }
+
+                //NOTE: just refresh, could be improved
+                window.location.reload();
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.error(textStatus, errorThrown);
+            });
+        });
+    }
+
+    document.querySelectorAll('.share-btn').forEach((btn) => {
+        const shareVaultModalElem = document.getElementById("modal-share-vault");
+        if (shareVaultModalElem === null) {
+            return;
+        }
+
+        const shareVaultModal = bootstrap.Modal.getOrCreateInstance(shareVaultModalElem);
+        btn.addEventListener('click', (e) => {
+            const url1 = document.getElementById('vault-secret-url').value;
+
+            lastAccessDetails.nonce = null;
+            lastAccessDetails.tag = null;
+            lastAccessDetails.secret = null;
+
+            const shareVaultModalElem = document.getElementById("modal-share-vault");
+            if (shareVaultModalElem === null) {
+                return;
+            }
+
+            const shareVaultModal = bootstrap.Modal.getOrCreateInstance(shareVaultModalElem);
+            const shareBtn = document.getElementById("share-vault-btn");
+
+            const id = e.currentTarget.dataset.id;
+            const getVaultSecretUrl = `${url1}?id=${id}`;
+            $.ajax(getVaultSecretUrl, {
+                method: 'GET',
+                dataType: 'json',
+                contentType: 'application/json',
+            }).done((response) => {
+                if (!response.ok) {
+                    console.error(response.reason);
+                    return;
+                }
+
+                const encryptedNonce = base64ToArrayBuffer(response.nonce);
+                const encryptedTag = base64ToArrayBuffer(response.tag);
+                const encryptedSecret = base64ToArrayBuffer(response.secret);
+
+                getDBVersion(LocalDBName)
+                    .then(version => {
+                        openDatabase(LocalDBName, email, version)
+                            .then(db => {
+                                fetchDataByKeyFromDB(db, email, "kPair")
+                                    .then(keyPair => {
+                                        window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedNonce)
+                                            .then(decryptedNonce => {
+                                                const nonce = arrayBufferToBase64(decryptedNonce);
+                                                window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedTag)
+                                                    .then(decryptedTag => {
+                                                        const tag = arrayBufferToBase64(decryptedTag);
+                                                        window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedSecret)
+                                                            .then(decryptedSecret => {
+                                                                const secret = btoa(new TextDecoder().decode(new Uint8Array(decryptedSecret)));
+
+                                                                $.ajax(document.getElementById('users-url').value, {
+                                                                    method: 'GET',
+                                                                    dataType: 'json',
+                                                                    contentType: 'application/json',
+                                                                }).done((response) => {
+                                                                    if (!response.ok) {
+                                                                        console.error(response.reason);
+                                                                        return;
+                                                                    }
+
+                                                                    lastAccessDetails.nonce = nonce;
+                                                                    lastAccessDetails.tag = tag;
+                                                                    lastAccessDetails.secret = secret;
+
+                                                                    let lines = [];
+                                                                    const max = response.users.length;
+                                                                    for (let i = 0; i < max; i++) {
+                                                                        let user = response.users[i];
+
+                                                                        let userAvatar = user.avatar.content;
+                                                                        let userName = user.name;
+                                                                        let userEmail = user.email;
+                                                                        let userId = user.id;
+
+                                                                        if (user.avatar.img) {
+                                                                            userAvatar = `<span class="avatar" style="background-image: url(${user.avatar.content})"></span>`;
+                                                                        }
+
+                                                                        lines.push(`<div><div class="row"><div class="col-auto"><span class="avatar">${userAvatar}</span></div>
+                            <div class="col"><div class="text-truncate"><strong>${userName}</strong></div><div class="text-secondary">${userEmail}</div></div>
+                            <div class="col-auto align-self-center"><input type="checkbox" class="share-chk" id="shared-with-${userId}" data-id="${userId}"></div></div></div>`);
+                                                                    }
+
+                                                                    shareBtn.dataset.id = id;
+                                                                    document.getElementById('vault-users-list').innerHTML = lines.join('');
+                                                                    shareVaultModal.show();
+                                                                }).fail((jqXHR, textStatus, errorThrown) => {
+                                                                    console.error(textStatus, errorThrown);
+                                                                });
+
+                                                                // $.ajax(detailsUrl, {
+                                                                //     method: 'POST',
+                                                                //     dataType: 'json',
+                                                                //     contentType: 'application/json',
+                                                                //     data: JSON.stringify({
+                                                                //         nonce: nonce,
+                                                                //         tag: tag,
+                                                                //         secret: secret,
+                                                                //     })
+                                                                // }).done((response) => {
+                                                                //     if (!response.ok) {
+                                                                //         console.error(response.reason);
+                                                                //         return;
+                                                                //     }
+                                                                //
+                                                                //     //document.getElementById("v-nonce").value = nonce;
+                                                                //     //document.getElementById("v-tag").value = tag;
+                                                                //     //document.getElementById("v-sec").value = secret;
+                                                                //
+                                                                //     lastAccessDetails.nonce = nonce;
+                                                                //     lastAccessDetails.tag = tag;
+                                                                //     lastAccessDetails.secret = secret;
+                                                                //
+                                                                //     document.getElementById('vault-data').value = response.data;
+                                                                //     document.getElementById('vault-description').value = response.description;
+                                                                //     document.getElementById('vault-username').value = response.username;
+                                                                //     document.getElementById('vault-url').value = response.url;
+                                                                //     document.getElementById('vault-notes').value = response.notes;
+                                                                //
+                                                                //     const saveBtn = document.getElementById("edit-vault-btn");
+                                                                //     saveBtn.dataset.id = response.id;
+                                                                //
+                                                                //     vaultDetailsModal.show();
+                                                                // }).fail((jqXHR, textStatus, errorThrown) => {
+                                                                //     console.error(textStatus, errorThrown);
+                                                                // });
+                                                            });
+                                                    });
+                                            });
+                                    }).catch(error => { // ./fetchDataByKeyFromDB
+                                    console.error('Error while fetching data:', error);
+                                });
+                            }).catch(error => { // ./openDatabase
+                            console.error('Error while fetching data:', error);
+                        });
+                    }).catch(error => { // ./getDBVersion
+                    console.error('Error while fetching data:', error);
+                });
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.error(textStatus, errorThrown);
+            });
+        });// ./click event
+    });
 })();

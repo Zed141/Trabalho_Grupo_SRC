@@ -51,21 +51,6 @@
         return `-----BEGIN ${type}-----\n${formattedBase64}\n-----END ${type}-----`;
     };
 
-    /**
-     *
-     * @param buffer
-     * @returns {string}
-     */
-    const arrayBufferToBase64 = (buffer) => {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    };
-
     const saveKey = (dbName, storeName, key, keyType) => {
         let dbVersion = 0;
         getDBVersion(dbName)
@@ -73,7 +58,7 @@
                 dbVersion = version;
                 console.log(`Current version of the database '${dbName}': ${version}`);
                 openDatabase(dbName, storeName, dbVersion).then(db => {
-                    const transaction = db.transaction([storeName], 'readwrite');
+                    const transaction = db.transaction([storeName], 'readwrite', {durability: 'strict'});
                     const objectStore = transaction.objectStore(storeName);
 
                     const request = objectStore.put(key, keyType);

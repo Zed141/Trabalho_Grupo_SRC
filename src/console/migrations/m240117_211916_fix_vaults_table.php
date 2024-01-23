@@ -5,7 +5,7 @@ use yii\db\Migration;
 /**
  * Class m240117_211916_fix_vaults_table
  */
-class m240117_211916_fix_vaults_table extends Migration {
+final class m240117_211916_fix_vaults_table extends Migration {
     /**
      * {@inheritdoc}
      */

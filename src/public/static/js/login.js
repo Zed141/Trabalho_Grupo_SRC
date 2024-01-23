@@ -83,7 +83,7 @@
                             });
                         }).catch(error => {
                         console.error('Failed to open database:', error);
-                    })
+                    });
                 });
         });
     }
