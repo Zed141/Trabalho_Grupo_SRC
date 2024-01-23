@@ -73,10 +73,9 @@
                 }).catch(error => {
                     console.error('Database error:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error getting database version:', error);
-            });
+            }).catch(error => {
+            console.error('Error getting database version:', error);
+        });
     };
 
     const btn = document.getElementById('register-btn');
@@ -104,7 +103,7 @@
                     })
                 }).done((response) => {
                     if (!response.ok) {
-                        console.error(response.reason);
+                        alert(response.reason);
                         return;
                     }
 

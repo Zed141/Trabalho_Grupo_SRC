@@ -60,7 +60,7 @@
                 contentType: 'application/json',
             }).done((response) => {
                 if (!response.ok) {
-                    console.error(response.reason);
+                    alert(response.reason);
                     return;
                 }
 
@@ -96,7 +96,7 @@
                                                                     })
                                                                 }).done((response) => {
                                                                     if (!response.ok) {
-                                                                        console.error(response.reason);
+                                                                        alert(response.reason);
                                                                         return;
                                                                     }
 
@@ -174,7 +174,7 @@
                 })
             }).done((response) => {
                 if (!response.ok) {
-                    console.error(response.reason);
+                    alert(response.reason);
                     return;
                 }
 
@@ -225,7 +225,7 @@
                 })
             }).done((response) => {
                 if (!response.ok) {
-                    console.error(response.reason);
+                    alert(response.reason);
                     return;
                 }
 
@@ -236,7 +236,7 @@
             });
         });
     }
-    
+
     btn = document.getElementById("share-vault-btn");
     if (btn !== null) {
         btn.addEventListener("click", (e) => {
@@ -266,7 +266,7 @@
                 })
             }).done((response) => {
                 if (!response.ok) {
-                    console.error(response.reason);
+                    alert(response.reason);
                     return;
                 }
 
@@ -308,7 +308,7 @@
                 contentType: 'application/json',
             }).done((response) => {
                 if (!response.ok) {
-                    console.error(response.reason);
+                    alert(response.reason);
                     return;
                 }
 
@@ -338,7 +338,7 @@
                                                                     contentType: 'application/json',
                                                                 }).done((response) => {
                                                                     if (!response.ok) {
-                                                                        console.error(response.reason);
+                                                                        alert(response.reason);
                                                                         return;
                                                                     }
 
@@ -371,43 +371,6 @@
                                                                 }).fail((jqXHR, textStatus, errorThrown) => {
                                                                     console.error(textStatus, errorThrown);
                                                                 });
-
-                                                                // $.ajax(detailsUrl, {
-                                                                //     method: 'POST',
-                                                                //     dataType: 'json',
-                                                                //     contentType: 'application/json',
-                                                                //     data: JSON.stringify({
-                                                                //         nonce: nonce,
-                                                                //         tag: tag,
-                                                                //         secret: secret,
-                                                                //     })
-                                                                // }).done((response) => {
-                                                                //     if (!response.ok) {
-                                                                //         console.error(response.reason);
-                                                                //         return;
-                                                                //     }
-                                                                //
-                                                                //     //document.getElementById("v-nonce").value = nonce;
-                                                                //     //document.getElementById("v-tag").value = tag;
-                                                                //     //document.getElementById("v-sec").value = secret;
-                                                                //
-                                                                //     lastAccessDetails.nonce = nonce;
-                                                                //     lastAccessDetails.tag = tag;
-                                                                //     lastAccessDetails.secret = secret;
-                                                                //
-                                                                //     document.getElementById('vault-data').value = response.data;
-                                                                //     document.getElementById('vault-description').value = response.description;
-                                                                //     document.getElementById('vault-username').value = response.username;
-                                                                //     document.getElementById('vault-url').value = response.url;
-                                                                //     document.getElementById('vault-notes').value = response.notes;
-                                                                //
-                                                                //     const saveBtn = document.getElementById("edit-vault-btn");
-                                                                //     saveBtn.dataset.id = response.id;
-                                                                //
-                                                                //     vaultDetailsModal.show();
-                                                                // }).fail((jqXHR, textStatus, errorThrown) => {
-                                                                //     console.error(textStatus, errorThrown);
-                                                                // });
                                                             });
                                                     });
                                             });

@@ -43,7 +43,7 @@
                                         })
                                     }).done((response) => {
                                         if (!response.ok) {
-                                            console.error(response.reason);
+                                            alert(response.reason);
                                             return;
                                         }
 
@@ -62,7 +62,7 @@
                                                     })
                                                 }).done((response) => {
                                                     if (!response.ok) {
-                                                        console.error(response.reason);
+                                                        alert(response.reason);
                                                         return;
                                                     }
 
