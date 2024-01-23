@@ -61,3 +61,15 @@ const base64ToArrayBuffer = (base64) => {
     }
     return bytes.buffer;
 }
+
+function arrayBufferToBase64(buffer) {
+    let binaryString = '';
+    let bytes = new Uint8Array(buffer);
+    let len = bytes.byteLength;
+
+    for (let i = 0; i < len; i++) {
+        binaryString += String.fromCharCode(bytes[i]);
+    }
+
+    return btoa(binaryString);
+}

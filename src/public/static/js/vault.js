@@ -31,17 +31,21 @@
     }
 
     document.querySelectorAll('.edit-btn').forEach((btn) => {
-        const url = document.getElementById('details-url').value;
+        const url1 = document.getElementById('get-vault-secret-url').value;
+        const url2 = document.getElementById('details-url').value;
         const vaultDetailsModalElem = document.getElementById("modal-add-vault");
         if (vaultDetailsModalElem === null) {
             return;
         }
         const vaultDetailsModal = new bootstrap.Modal(vaultDetailsModalElem);
 
+
         btn.addEventListener('click', (e) => {
+
             const id = e.currentTarget.dataset.id;
-            const detailsUrl = `${url}?id=${id}`;
-            $.ajax(detailsUrl, {
+
+            const getVaultSecretUrl = `${url1}?id=${id}`;
+            $.ajax(getVaultSecretUrl, {
                 method: 'GET',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -50,20 +54,79 @@
                     console.error(response.reason);
                     return;
                 }
+                console.log("response", response);
+                const email = response.email;
+                const encryptedNonce = base64ToArrayBuffer(response.nonce);
+                const encryptedTag = base64ToArrayBuffer(response.tag);
+                const encryptedSecret = base64ToArrayBuffer(response.secret);
 
-                document.getElementById('vault-description').value = response.description;
-                document.getElementById('vault-username').value = response.username;
-                document.getElementById('vault-url').value = response.url;
-                document.getElementById('vault-notes').value = response.notes;
+                // Fetch Public Key from the Indexed DB
+                getDBVersion(LocalDBName)
+                    .then(version => {
+                        openDatabase(LocalDBName, email, version)
+                            .then(db => {
+                                fetchDataByKeyFromDB(db, email, "kPair")
+                                    .then(keyPair => {
+                                        window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedNonce)
+                                            .then(nonceDecrypted =>{
+                                                const nonce = arrayBufferToBase64(nonceDecrypted);
 
-                const saveBtn = document.getElementById("save-vault-btn");
-                saveBtn.dataset.action = "update";
-                saveBtn.dataset.id = response.id;
+                                                window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedTag)
+                                                    .then(tagDecrypted =>{
+                                                        const tag = arrayBufferToBase64(tagDecrypted);
 
-                vaultDetailsModal.show();
-            }).fail((jqXHR, textStatus, errorThrown) => {
-                console.error(textStatus, errorThrown);
-            });
+                                                    window.crypto.subtle.decrypt({name: "RSA-OAEP"}, keyPair.privateKey, encryptedSecret)
+                                                        .then(secretDecrypted =>{
+                                                            const secret = new TextDecoder().decode(new Uint8Array(secretDecrypted));
+
+
+                                                            const detailsUrl = `${url2}?id=${id}`;
+                                                            $.ajax(detailsUrl, {
+                                                                method: 'POST',
+                                                                dataType: 'json',
+                                                                contentType: 'application/json',
+                                                                data: JSON.stringify({
+                                                                    nonce: nonce,
+                                                                    tag: tag,
+                                                                    secret: btoa(secret),
+
+                                                                })
+                                                            }).done((response) => {
+                                                                if (!response.ok) {
+                                                                    console.error(response.reason);
+                                                                    return;
+                                                                }
+                                                                console.log("repsonse: ", response);
+                                                                document.getElementById('vault-data').value = response.data;
+                                                                document.getElementById('vault-description').value = response.description;
+                                                                document.getElementById('vault-username').value = response.username;
+                                                                document.getElementById('vault-url').value = response.url;
+                                                                document.getElementById('vault-notes').value = response.notes;
+
+                                                                const saveBtn = document.getElementById("save-vault-btn");
+                                                                saveBtn.dataset.action = "update";
+                                                                saveBtn.dataset.id = response.id;
+
+                                                                vaultDetailsModal.show();
+                                                            })
+
+
+                                                    })
+                                                }
+
+
+                                            )
+                                    })
+                            })
+                    })
+
+                }).fail((jqXHR, textStatus, errorThrown) => {
+                    console.error(textStatus, errorThrown);
+                });
+
+            })
+
+
         });
     });
 

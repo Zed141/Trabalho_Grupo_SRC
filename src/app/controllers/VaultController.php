@@ -27,7 +27,7 @@ final class VaultController extends Controller {
                 'class' => AccessControl::class,
                 'rules' => [
                     ['actions' => [
-                        'index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details', 'available-user-list'
+                        'index', 'create', 'update', 'delete', 'revoke-access', 'share', 'details', 'available-user-list', "get-vault-secret"
                     ], 'allow' => true, 'roles' => ['@']]
                 ]
             ]
@@ -60,6 +60,7 @@ final class VaultController extends Controller {
 
         /** @var \app\orm\User  $user */
         $user = Yii::$app->user->identity;
+        $email = Yii::$app->user->identity->getEmail();
 
         /** @var \app\orm\Vault $vaultAccess */
         $vaultAccess = VaultAccess::find()->where(['vault_id' => $id, 'user_id' => $user->id])->one();
@@ -69,30 +70,53 @@ final class VaultController extends Controller {
 
         return $this->asJson(['ok' => true,
             'nonce' => $vaultAccess->nonce,
-            'secret' => $vaultAccess->secret]);
+            'secret' => $vaultAccess->secret,
+            'tag' => $vaultAccess->tag,
+            'email' => $email]);
 
     }
-    public function actionDetails(?int $id = null): Response {
+    public function actionDetails(?int $id = null): Response
+    {
+
         if (!$id) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
+        $request = Yii::$app->request;
+        $nonce = base64_decode($request->post('nonce'));
+        $tag = base64_decode($request->post('tag'));
+        $secret = base64_decode($request->post('secret'));
+
+
         /** @var \app\orm\User $user */
-        $user = Yii::$app->user->identity;
+        $user = Yii::$app->user->identity->getUser();
 
         /** @var \app\orm\Vault $vault */
-        $vault = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
-        if (!$vault) {
+        $vaultData = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
+        if (!$vaultData) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
 
+
+        $dataEncrypted = base64_decode($vaultData->data);
+
+        $vaultAES = new AES('gcm');
+        $vaultAES->setNonce($nonce);
+        $vaultAES->setKey($secret);
+        $vaultAES->setTag($tag);
+        $dataDecrypted = $vaultAES->decrypt($dataEncrypted);
+
+        $description = $vaultData->description;
+        $username = $vaultData->username;
+        $url = $vaultData->url;
+        $notes = $vaultData->notes;
+
         return $this->asJson(['ok' => true,
-            'id' => $vault->id,
-            'description' => $vault->description,
-            'data' => $vault->data,
-            'username' => $vault->username,
-            'url' => $vault->url,
-            'notes' => $vault->notes
+            'data' => $dataDecrypted,
+            'description' => $description,
+            'username' => $username,
+            'url' => $url,
+            'notes' => $notes,
         ]);
     }
 
@@ -138,6 +162,12 @@ final class VaultController extends Controller {
 
             $vaultAES->setKey($aesSecret);
             $vaultData = $vaultAES->encrypt($data);
+            $tag = $vaultAES->getTag();
+
+            $cipheredTag = $loadedKey->withHash('sha256')
+                ->withMGFHash('sha256')
+                ->encrypt($tag);
+
 
             $vault = new Vault();
             $vault->owner_id = $user->id;
@@ -157,6 +187,7 @@ final class VaultController extends Controller {
             $access->vault_id = $vault->id;
             $access->secret = base64_encode($cipheredAESSecret);
             $access->nonce = base64_encode($cipheredNonce);
+            $access->tag = base64_encode($cipheredTag);
 
             if (!$access->save(false)) {
                 $transaction->rollBack();

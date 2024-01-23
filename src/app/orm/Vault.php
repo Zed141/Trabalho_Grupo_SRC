@@ -16,6 +16,7 @@ use yii\db\ActiveRecord;
  * @property string|null   $notes       Optional notes that add context or other visible/public info about this vault
  *@property string|null   $nonce    nonce encrypted with Public RSA and encoded in base64
  * @property string|null $secret    $secret encrypted with Public RSA and encoded in base64
+ * @property string|null tag    $Tag of the encryption - needed for decryption
  *
  * @property \app\orm\User $owner
  */
@@ -42,6 +43,7 @@ final class Vault extends ActiveRecord {
             'notes' => Yii::t('app', 'Additional information'),
             'nonce' => Yii::t('app', 'Nonce'),
             'secret' => Yii::t('app', 'Secret'),
+            'tag' => Yii::t('app', 'Tag'),
         ];
     }
 

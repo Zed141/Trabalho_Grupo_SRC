@@ -54,6 +54,7 @@ $this->registerJsFile('/static/js/vault.js', ['depends' => 'app\assets\AppAsset'
     ?>
 </div>
 
+<input type="hidden" id="get-vault-secret-url" value="<?= Url::to('/vault/get-vault-secret') ?>"/>
 <input type="hidden" id="details-url" value="<?= Url::to('/vault/details') ?>"/>
 <input type="hidden" id="users-url" value="<?= Url::to('/vault/available-user-list') ?>"/>
 
