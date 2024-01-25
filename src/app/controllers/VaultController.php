@@ -102,8 +102,13 @@ final class VaultController extends Controller {
         /** @var \app\orm\User $user */
         $user = Yii::$app->user->identity->getUser();
 
-        /** @var \app\orm\Vault $vault */
-        $vault = Vault::find()->where(['id' => $id, 'owner_id' => $user->id])->one();
+        /** @var \app\orm\VaultAccess $vaultAccess */
+        $vaultAccess = VaultAccess::find()->where(['vault_id' => $id, 'user_id' => $user->id])->one();
+        if (!$vaultAccess) {
+            return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
+        }
+
+        $vault = $vaultAccess->vault;
         if (!$vault) {
             return $this->asJson(['ok' => false, 'reason' => 'Unknown or invalid vault.']);
         }
