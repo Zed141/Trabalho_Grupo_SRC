@@ -6,3 +6,4 @@ src/bin/local-php-security-checker
 /src/public/demo
 /src/bin/*.sqlite
 .idea/dataSources.xml
+/nbproject/private/
